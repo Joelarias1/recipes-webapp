@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - RecetaApp</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .admin-gradient {
+            background: linear-gradient(135deg, #0f766e 0%, #065f46 100%);
+        }
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 3px solid white;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-teal-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold flex items-center">
+                <i class="fas fa-utensils mr-2"></i>
+                RecetaApp
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                    <i class="fas fa-home mr-1"></i> Ver sitio
+                </a>
+                
+                <!-- Menú del usuario -->
+                <div class="dropdown relative">
+                    <button id="user-menu-button" class="flex items-center hover:text-teal-200 focus:outline-none">
+                        <span sec:authentication="name">Admin</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="dropdown-menu w-48 py-2 mt-2 bg-white rounded-md shadow-lg">
+                        <a th:href="@{/admin/perfil}" class="block px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                            <i class="fas fa-user-circle mr-2"></i> Mi Perfil
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-grow">
+        <!-- Sidebar -->
+        <aside class="bg-teal-800 text-white w-64 flex-shrink-0 hidden md:block">
+            <div class="p-4">
+                <h2 class="text-xl font-bold">Administración</h2>
+                <p class="text-teal-200 text-sm">Panel de control</p>
+            </div>
+            
+            <nav class="mt-5">
+                <a th:href="@{/admin}" class="nav-link active flex items-center px-4 py-3 text-white">
+                    <i class="fas fa-tachometer-alt w-6"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/usuarios}" class="nav-link flex items-center px-4 py-3 text-white">
+                    <i class="fas fa-users w-6"></i>
+                    <span>Usuarios</span>
+                </a>
+                <a th:href="@{/admin/recetas}" class="nav-link flex items-center px-4 py-3 text-white">
+                    <i class="fas fa-book-open w-6"></i>
+                    <span>Recetas</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="flex-grow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                <div class="text-sm breadcrumbs text-gray-500">
+                    <span>Administración</span>
+                    <span class="mx-2">/</span>
+                    <span>Dashboard</span>
+                </div>
+            </div>
+            
+            <!-- Tarjetas de resumen -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="text-gray-500">Usuarios</p>
+                            <h3 class="text-3xl font-bold text-gray-700" th:text="${totalUsuarios ?: '25'}">25</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-users text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-green-600 mt-2 flex items-center text-sm">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span>3 nuevos esta semana</span>
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="text-gray-500">Recetas</p>
+                            <h3 class="text-3xl font-bold text-gray-700" th:text="${totalRecetas ?: '122'}">122</h3>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-book-open text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-green-600 mt-2 flex items-center text-sm">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span>15 nuevas este mes</span>
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="text-gray-500">Categorías</p>
+                            <h3 class="text-3xl font-bold text-gray-700" th:text="${totalCategorias ?: '8'}">8</h3>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-full">
+                            <i class="fas fa-tags text-yellow-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-yellow-600 mt-2 flex items-center text-sm">
+                        <span>Último mes</span>
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="text-gray-500">Ingredientes</p>
+                            <h3 class="text-3xl font-bold text-gray-700" th:text="${totalIngredientes ?: '204'}">204</h3>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-carrot text-red-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-red-600 mt-2 flex items-center text-sm">
+                        <i class="fas fa-plus mr-1"></i>
+                        <span>12 nuevos esta semana</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Contenido principal -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-700">Últimos usuarios registrados</h3>
+                            <a th:href="@{/admin/usuarios}" class="text-teal-600 hover:text-teal-700 text-sm">Ver todos</a>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto">
+                                <thead class="border-b">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Usuario</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Email</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Rol</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Fecha</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(ultimosUsuarios)}" class="hover:bg-gray-50">
+                                        <td class="px-4 py-3" colspan="5">
+                                            <span class="text-gray-500">No hay usuarios registrados</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr th:each="usuario : ${ultimosUsuarios}" class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                                                    <span class="text-teal-600 font-bold" th:text="${#strings.substring(usuario.nombre,0,1)}">J</span>
+                                                </div>
+                                                <span th:text="${usuario.nombre}">Juan Pérez</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3" th:text="${usuario.email}">juan@example.com</td>
+                                        <td class="px-4 py-3">
+                                            <span th:if="${usuario.rol == 'ROLE_ADMIN'}" class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Admin</span>
+                                            <span th:if="${usuario.rol == 'ROLE_CHEF'}" class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Chef</span>
+                                            <span th:if="${usuario.rol == 'ROLE_USER'}" class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Usuario</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500" th:text="${#dates.format(usuario.fechaCreacion, 'dd/MM/yyyy')}">20/10/2023</td>
+                                        <td class="px-4 py-3">
+                                            <span th:if="${usuario.activo}" class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Activo</span>
+                                            <span th:unless="${usuario.activo}" class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Inactivo</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Datos de ejemplo -->
+                                    <tr th:if="${#lists.isEmpty(ultimosUsuarios)}" class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                                                    <span class="text-teal-600 font-bold">J</span>
+                                                </div>
+                                                <span>Juan Pérez</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">juan@example.com</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Usuario</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">20/10/2023</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Activo</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr th:if="${#lists.isEmpty(ultimosUsuarios)}" class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                                                    <span class="text-teal-600 font-bold">M</span>
+                                                </div>
+                                                <span>María García</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">maria@example.com</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Chef</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">18/10/2023</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Activo</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr th:if="${#lists.isEmpty(ultimosUsuarios)}" class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                                                    <span class="text-teal-600 font-bold">A</span>
+                                                </div>
+                                                <span>Ana Martínez</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">ana@example.com</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Admin</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">15/10/2023</td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Activo</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="bg-white rounded-lg shadow-md p-5 mb-6">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Estadísticas</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Usuarios activos</span>
+                                    <span class="text-sm font-medium text-gray-700">80%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Recetas publicadas</span>
+                                    <span class="text-sm font-medium text-gray-700">65%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-green-600 h-2.5 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Ocupación almacenamiento</span>
+                                    <span class="text-sm font-medium text-gray-700">40%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-yellow-600 h-2.5 rounded-full" style="width: 40%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-5">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Actividad reciente</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user-plus text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-800"><span class="font-semibold">Juan Pérez</span> se ha registrado</p>
+                                    <p class="text-xs text-gray-500">Hace 2 horas</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-file-alt text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-800"><span class="font-semibold">María García</span> ha publicado una receta</p>
+                                    <p class="text-xs text-gray-500">Hace 5 horas</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-tag text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-800">Se ha creado una nueva categoría</p>
+                                    <p class="text-xs text-gray-500">Ayer</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menú desplegable del usuario
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            // Manejo con click para mejor soporte en dispositivos móviles
+            userMenuButton?.addEventListener('click', function(e) {
+                e.preventDefault();
+                userDropdown?.classList.toggle('active');
+            });
+            
+            // Cerrar menú al hacer clic fuera de él
+            document.addEventListener('click', function(e) {
+                if (userMenuButton && userDropdown && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

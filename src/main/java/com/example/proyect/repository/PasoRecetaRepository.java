@@ -10,4 +10,5 @@ import java.util.List;
 public interface PasoRecetaRepository extends JpaRepository<PasoReceta, Long> {
     List<PasoReceta> findByRecetaIdOrderByNumeroOrden(Long recetaId);
     void deleteByRecetaId(Long recetaId);
+    void deleteByRecetaIdAndId(Long recetaId, Long id);
 } 

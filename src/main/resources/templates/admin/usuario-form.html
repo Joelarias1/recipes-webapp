@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${usuario.id == null ? 'Nuevo Usuario' : 'Editar Usuario'} + ' - RecetaApp'">Nuevo Usuario - RecetaApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .admin-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        .nav-link.active {
+            border-left: 4px solid #4f46e5;
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="admin-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-xl font-bold">RecetaApp</h1>
+                <span class="mx-2">|</span>
+                <h2 class="text-sm font-medium">Panel de Administración</h2>
+            </div>
+            <div class="flex items-center">
+                <a href="/" class="text-white mr-4 hover:text-gray-200">
+                    <i class="fas fa-home mr-1"></i> Ver sitio
+                </a>
+                <div class="relative group">
+                    <button class="flex items-center text-white focus:outline-none">
+                        <span class="mr-1">Admin</span>
+                        <i class="fas fa-user-circle"></i>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
+                        <a href="/perfil" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user-cog mr-2"></i> Mi Perfil
+                        </a>
+                        <a href="/logout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md">
+            <nav class="mt-5 px-2">
+                <a th:href="@{/admin}" class="group flex items-center px-2 py-2 text-gray-600 rounded-md nav-link hover:bg-gray-100 hover:text-gray-900">
+                    <i class="fas fa-tachometer-alt mr-3 text-gray-500"></i>
+                    Dashboard
+                </a>
+                <a th:href="@{/admin/usuarios}" class="group flex items-center px-2 py-2 text-gray-600 rounded-md nav-link active hover:bg-gray-100 hover:text-gray-900">
+                    <i class="fas fa-users mr-3 text-gray-500"></i>
+                    Usuarios
+                </a>
+                <a th:href="@{/admin/recetas}" class="group flex items-center px-2 py-2 text-gray-600 rounded-md nav-link hover:bg-gray-100 hover:text-gray-900">
+                    <i class="fas fa-book-open mr-3 text-gray-500"></i>
+                    Recetas
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800" th:text="${usuario.id == null ? 'Crear Nuevo Usuario' : 'Editar Usuario'}">Crear Nuevo Usuario</h2>
+                <a th:href="@{/admin/usuarios}" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+            </div>
+
+            <!-- Formulario de Usuario -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6">
+                    <form th:action="@{/admin/usuarios/guardar}" th:object="${usuario}" method="post" class="space-y-6">
+                        <input type="hidden" th:field="*{id}" />
+                        
+                        <!-- Información Personal -->
+                        <div class="border-b pb-6 mb-6">
+                            <h3 class="text-lg font-medium text-gray-700 mb-4">Información Personal</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                                    <input type="text" th:field="*{nombre}" id="nombre" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                </div>
+                                <div>
+                                    <label for="apellido" class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
+                                    <input type="text" th:field="*{apellido}" id="apellido" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                    <input type="email" th:field="*{email}" id="email" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                </div>
+                                <div>
+                                    <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                    <input type="text" th:field="*{telefono}" id="telefono" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Información de la Cuenta -->
+                        <div class="border-b pb-6 mb-6">
+                            <h3 class="text-lg font-medium text-gray-700 mb-4">Información de la Cuenta</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Nombre de Usuario *</label>
+                                    <input type="text" th:field="*{username}" id="username" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                </div>
+                                
+                                <!-- Solo mostrar campo de contraseña para nuevos usuarios -->
+                                <div th:if="${usuario.id == null}">
+                                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
+                                    <input type="password" th:field="*{password}" id="password" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                </div>
+                                <div th:if="${usuario.id == null}">
+                                    <label for="confirmarPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña *</label>
+                                    <input type="password" id="confirmarPassword" name="confirmarPassword" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                </div>
+                                
+                                <div>
+                                    <label for="rol" class="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+                                    <select th:field="*{rol}" id="rol" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                                        required>
+                                        <option value="ROLE_ADMIN">Administrador</option>
+                                        <option value="ROLE_CHEF">Chef</option>
+                                        <option value="ROLE_USER">Usuario</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="activo" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                    <div class="mt-2">
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" th:field="*{activo}" id="activo" 
+                                                class="form-checkbox h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                            <span class="ml-2 text-gray-700">Usuario activo</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Acciones del formulario -->
+                        <div class="flex justify-end space-x-3">
+                            <a th:href="@{/admin/usuarios}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                <i class="fas fa-save mr-1"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Validación básica de formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(event) {
+                // Para nuevos usuarios, verificar que las contraseñas coincidan
+                const password = document.getElementById('password');
+                const confirmarPassword = document.getElementById('confirmarPassword');
+                
+                if (password && confirmarPassword) {
+                    if (password.value !== confirmarPassword.value) {
+                        event.preventDefault();
+                        alert('Las contraseñas no coinciden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

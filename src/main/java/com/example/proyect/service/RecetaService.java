@@ -40,6 +40,24 @@ public class RecetaService {
     public List<Receta> listarRecetasPorUsuario(Long usuarioId) {
         return recetaRepository.findByCreadorId(usuarioId);
     }
+
+    /**
+     * Lista todas las recetas sin importar su estado
+     */
+    public List<Receta> listarTodasLasRecetas() {
+        return recetaRepository.findAll();
+    }
+    
+    public List<Ingrediente> listarIngredientesDisponibles() {
+        return ingredienteRepository.findAll();
+    }
+    
+    /**
+     * Cuenta el número total de recetas
+     */
+    public long contarRecetas() {
+        return recetaRepository.count();
+    }
     
     public Optional<Receta> buscarPorId(Long id) {
         return recetaRepository.findById(id);
@@ -97,5 +115,15 @@ public class RecetaService {
         paso.setImagenUrl(imagenUrl);
         
         return pasoRecetaRepository.save(paso);
+    }
+    
+    @Transactional
+    public void eliminarIngredienteDeReceta(Long recetaId, Long ingredienteId) {
+        recetaIngredienteRepository.deleteByRecetaIdAndId(recetaId, ingredienteId);
+    }
+    
+    @Transactional
+    public void eliminarPasoDeReceta(Long recetaId, Long pasoId) {
+        pasoRecetaRepository.deleteByRecetaIdAndId(recetaId, pasoId);
     }
 } 

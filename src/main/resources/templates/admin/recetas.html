@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Recetas - RecetaApp</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .admin-gradient {
+            background: linear-gradient(135deg, #0f766e 0%, #065f46 100%);
+        }
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 3px solid white;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-teal-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold flex items-center">
+                <i class="fas fa-utensils mr-2"></i>
+                RecetaApp
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                    <i class="fas fa-home mr-1"></i> Ver sitio
+                </a>
+                
+                <!-- Menú del usuario -->
+                <div class="dropdown relative">
+                    <button id="user-menu-button" class="flex items-center hover:text-teal-200 focus:outline-none">
+                        <span sec:authentication="name">Admin</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="dropdown-menu w-48 py-2 mt-2 bg-white rounded-md shadow-lg">
+                        <a th:href="@{/admin/perfil}" class="block px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                            <i class="fas fa-user-circle mr-2"></i> Mi Perfil
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-grow">
+        <!-- Sidebar -->
+        <aside class="bg-teal-800 text-white w-64 flex-shrink-0 hidden md:block">
+            <div class="p-4">
+                <h2 class="text-xl font-bold">Administración</h2>
+                <p class="text-teal-200 text-sm">Panel de control</p>
+            </div>
+            
+            <nav class="mt-5">
+                <a th:href="@{/admin}" class="nav-link flex items-center px-4 py-3 text-white">
+                    <i class="fas fa-tachometer-alt w-6"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/usuarios}" class="nav-link flex items-center px-4 py-3 text-white">
+                    <i class="fas fa-users w-6"></i>
+                    <span>Usuarios</span>
+                </a>
+                <a th:href="@{/admin/recetas}" class="nav-link active flex items-center px-4 py-3 text-white">
+                    <i class="fas fa-book-open w-6"></i>
+                    <span>Recetas</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="flex-grow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Gestión de Recetas</h1>
+                <div class="text-sm breadcrumbs text-gray-500">
+                    <span>Administración</span>
+                    <span class="mx-2">/</span>
+                    <span>Recetas</span>
+                </div>
+            </div>
+
+            <!-- Tabla de recetas -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Creador</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="receta : ${recetas}" class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900" th:text="${receta.nombre}"></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" th:text="${receta.creador.nombre + ' ' + receta.creador.apellido}"></div>
+                                    <div class="text-sm text-gray-500" th:text="${receta.creador.username}"></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span th:if="${receta.publica}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Pública
+                                    </span>
+                                    <span th:unless="${receta.publica}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Privada
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a th:href="@{/recetas/{id}(id=${receta.id})}" class="text-teal-600 hover:text-teal-900" title="Ver receta">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            
+                            <!-- Mensaje si no hay recetas -->
+                            <tr th:if="${#lists.isEmpty(recetas)}">
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                    No hay recetas disponibles
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menú desplegable del usuario
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            userMenuButton?.addEventListener('click', function(e) {
+                e.preventDefault();
+                userDropdown?.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (userMenuButton && userDropdown && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

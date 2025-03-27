@@ -82,10 +82,23 @@ public class RecetaController {
         Usuario usuario = usuarioService.buscarPorUsername(auth.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
-        receta.setCreador(usuario);
-        recetaService.guardarReceta(receta);
+        if (receta.getId() != null) {
+            Receta recetaExistente = recetaService.buscarPorId(receta.getId())
+                    .orElseThrow(() -> new RuntimeException("Receta no encontrada"));
+            
+            if (!recetaExistente.getCreador().getId().equals(usuario.getId()) && 
+                !auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                return "redirect:/acceso-denegado";
+            }
+            
+            receta.setCreador(recetaExistente.getCreador());
+            receta.setFechaCreacion(recetaExistente.getFechaCreacion());
+        } else {
+            receta.setCreador(usuario);
+        }
         
-        return "redirect:/recetas/editar/" + receta.getId();
+        receta = recetaService.guardarReceta(receta);
+        return "redirect:/recetas/detalle/" + receta.getId();
     }
     
     @GetMapping("/editar/{id}")
@@ -104,6 +117,7 @@ public class RecetaController {
         
         model.addAttribute("receta", receta);
         model.addAttribute("ingredientes", recetaService.listarIngredientesPorReceta(id));
+        model.addAttribute("ingredientesDisponibles", recetaService.listarIngredientesDisponibles());
         model.addAttribute("pasos", recetaService.listarPasosPorReceta(id));
         
         return "recetas/form";
@@ -125,5 +139,39 @@ public class RecetaController {
         
         recetaService.eliminarReceta(id);
         return "redirect:/recetas/mis-recetas";
+    }
+
+    @PostMapping("/{id}/ingredientes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF', 'USER')")
+    public String agregarIngrediente(@PathVariable Long id, 
+                                   @RequestParam Long ingredienteId,
+                                   @RequestParam String cantidad,
+                                   @RequestParam String unidad) {
+        recetaService.agregarIngredienteAReceta(id, ingredienteId, cantidad, unidad);
+        return "redirect:/recetas/editar/" + id;
+    }
+
+    @PostMapping("/{recetaId}/ingredientes/{id}/eliminar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF', 'USER')")
+    public String eliminarIngrediente(@PathVariable Long recetaId, @PathVariable Long id) {
+        recetaService.eliminarIngredienteDeReceta(recetaId, id);
+        return "redirect:/recetas/editar/" + recetaId;
+    }
+
+    @PostMapping("/{id}/pasos")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF', 'USER')")
+    public String agregarPaso(@PathVariable Long id,
+                            @RequestParam Integer numeroOrden,
+                            @RequestParam String descripcion,
+                            @RequestParam(required = false) String imagenUrl) {
+        recetaService.agregarPasoAReceta(id, numeroOrden, descripcion, imagenUrl);
+        return "redirect:/recetas/editar/" + id;
+    }
+
+    @PostMapping("/{recetaId}/pasos/{id}/eliminar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF', 'USER')")
+    public String eliminarPaso(@PathVariable Long recetaId, @PathVariable Long id) {
+        recetaService.eliminarPasoDeReceta(recetaId, id);
+        return "redirect:/recetas/editar/" + recetaId;
     }
 } 

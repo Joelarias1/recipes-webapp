@@ -1,144 +1,247 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Detalle de Receta - RecetaApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${receta.nombre} + ' - RecetaApp'">Detalle de Receta - RecetaApp</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <div th:replace="~{layout/base :: body(contenido=~{::main}, titulo='Detalle de Receta - RecetaApp')}">
-        <main>
-            <!-- Encabezado y acciones -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800 mb-2" th:text="${receta.nombre}">Nombre de la Receta</h1>
-                    <p class="text-gray-600">
-                        <span class="mr-3">
-                            <i class="far fa-clock mr-1"></i>
-                            <span th:text="${receta.tiempoPreparacion + ' min'}">30 min</span>
-                        </span>
-                        <span class="mr-3">
-                            <i class="fas fa-signal mr-1"></i>
-                            <span th:text="${receta.dificultad}">FÁCIL</span>
-                        </span>
-                        <span>
-                            <i class="far fa-user mr-1"></i>
-                            <span th:text="${receta.creador.nombre + ' ' + receta.creador.apellido}">Chef</span>
-                        </span>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-teal-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold flex items-center">
+                <i class="fas fa-utensils mr-2"></i>
+                RecetaApp
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/recetas/listar}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                    <i class="fas fa-book-open mr-1"></i> Recetas
+                </a>
+                <a th:href="@{/recetas/mis-recetas}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                    <i class="fas fa-user-chef mr-1"></i> Mis Recetas
+                </a>
+                
+                <!-- Menú del usuario -->
+                <div class="dropdown relative" sec:authorize="isAuthenticated()">
+                    <button id="user-menu-button" class="flex items-center hover:text-teal-200 focus:outline-none">
+                        <span sec:authentication="name">Usuario</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="dropdown-menu w-48 py-2 mt-2 bg-white rounded-md shadow-lg">
+                        <a th:href="@{/perfil}" class="block px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                            <i class="fas fa-user-circle mr-2"></i> Mi Perfil
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Enlaces de autenticación -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Encabezado de la receta -->
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2" th:text="${receta.nombre}">Nombre de la Receta</h1>
+                <div class="flex items-center text-gray-600 space-x-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-user mr-2"></i>
+                        <span th:text="${receta.creador.nombre + ' ' + receta.creador.apellido}">Autor</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span th:text="${receta.tiempoPreparacion + ' minutos'}">Tiempo</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-signal mr-2"></i>
+                        <span th:text="${receta.dificultad}">Dificultad</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-eye mr-2"></i>
+                        <span th:text="${receta.publica ? 'Pública' : 'Privada'}" 
+                              th:class="${receta.publica ? 'text-green-600' : 'text-gray-600'}">Estado</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="flex space-x-2" th:if="${#authentication.name == receta.creador.username or #authorization.expression('hasRole(''ADMIN'')')}">
+                <a th:href="@{/recetas/editar/{id}(id=${receta.id})}" class="bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded-lg flex items-center">
+                    <i class="fas fa-edit mr-2"></i> Editar
+                </a>
+                <button onclick="confirmarEliminar()" class="bg-red-600 text-white hover:bg-red-700 py-2 px-4 rounded-lg flex items-center">
+                    <i class="fas fa-trash-alt mr-2"></i> Eliminar
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido de la receta -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Imagen y descripción -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Imagen -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="h-96 bg-gray-200 relative">
+                        <img th:if="${receta.imagenUrl}" th:src="${receta.imagenUrl}" alt="Imagen de receta" class="w-full h-full object-cover">
+                        <div th:unless="${receta.imagenUrl}" class="w-full h-full flex items-center justify-center bg-green-100">
+                            <i class="fas fa-utensils text-6xl text-green-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Descripción</h2>
+                    <p class="text-gray-700 leading-relaxed" th:text="${receta.descripcion}">
+                        Descripción detallada de la receta...
                     </p>
                 </div>
-                
-                <!-- Acciones de edición para el propietario o admin -->
-                <div class="mt-4 md:mt-0 flex space-x-2" 
-                     th:if="${#authentication.isAuthenticated() && (#authentication.name == receta.creador.username || #authorization.expression('hasRole(''ADMIN'')'))}">
-                    <a th:href="@{/recetas/editar/{id}(id=${receta.id})}" class="bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded-lg flex items-center">
-                        <i class="fas fa-edit mr-2"></i> Editar
-                    </a>
-                    <a th:href="@{/recetas/eliminar/{id}(id=${receta.id})}" 
-                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta receta?')"
-                       class="bg-red-600 text-white hover:bg-red-700 py-2 px-4 rounded-lg flex items-center">
-                        <i class="fas fa-trash-alt mr-2"></i> Eliminar
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Imagen y descripción -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                <div class="h-96 bg-gray-200 relative">
-                    <img th:if="${receta.imagenUrl}" th:src="${receta.imagenUrl}" alt="Imagen de receta" class="w-full h-full object-cover">
-                    <div th:unless="${receta.imagenUrl}" class="w-full h-full flex items-center justify-center bg-green-100">
-                        <i class="fas fa-utensils text-6xl text-green-400"></i>
-                    </div>
-                </div>
-                
-                <div class="p-6">
-                    <div class="mb-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Descripción</h2>
-                        <p class="text-gray-700" th:text="${receta.descripcion}">Descripción detallada de la receta...</p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">Ingredientes</h2>
-                        
-                        <!-- Mensaje cuando no hay ingredientes -->
-                        <div th:if="${#lists.isEmpty(ingredientes)}" class="text-gray-500 italic">
-                            No hay ingredientes registrados para esta receta.
-                        </div>
-                        
-                        <!-- Lista de ingredientes -->
-                        <ul th:unless="${#lists.isEmpty(ingredientes)}" class="space-y-2">
-                            <li th:each="ing : ${ingredientes}" class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                <span>
-                                    <span class="font-medium" th:text="${ing.cantidad + ' ' + ing.unidad}">100 gr</span>
-                                    de <span th:text="${ing.ingrediente.nombre}">Ingrediente</span>
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pasos de preparación -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Preparación</h2>
+
+                <!-- Pasos -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Preparación</h2>
                     
                     <!-- Mensaje cuando no hay pasos -->
-                    <div th:if="${#lists.isEmpty(pasos)}" class="text-gray-500 italic">
-                        No hay pasos de preparación registrados para esta receta.
+                    <div th:if="${#lists.isEmpty(pasos)}" class="text-center py-8">
+                        <i class="fas fa-list text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">No hay pasos registrados para esta receta.</p>
                     </div>
                     
                     <!-- Lista de pasos -->
-                    <div th:unless="${#lists.isEmpty(pasos)}" class="space-y-6">
-                        <div th:each="paso : ${pasos}" class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                            <div class="flex">
-                                <div class="flex-shrink-0 mr-4">
-                                    <span class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
-                                        <span th:text="${paso.numeroOrden}">1</span>
-                                    </span>
+                    <div th:unless="${#lists.isEmpty(pasos)}" class="space-y-8">
+                        <div th:each="paso : ${pasos}" class="flex">
+                            <div class="flex-shrink-0 mr-6">
+                                <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                                    <span th:text="${paso.numeroOrden}">1</span>
                                 </div>
-                                <div>
-                                    <p class="text-gray-700" th:text="${paso.descripcion}">Descripción del paso...</p>
-                                    
-                                    <!-- Imagen del paso, si existe -->
-                                    <div th:if="${paso.imagenUrl}" class="mt-3">
-                                        <img th:src="${paso.imagenUrl}" alt="Imagen del paso" class="rounded-lg max-h-48">
-                                    </div>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="text-gray-700 mb-4" th:text="${paso.descripcion}">Descripción del paso...</p>
+                                <div th:if="${paso.imagenUrl}" class="mt-4">
+                                    <img th:src="${paso.imagenUrl}" alt="Imagen del paso" class="rounded-lg shadow-sm max-h-64 object-cover">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Sección de valoraciones y comentarios (para futuras implementaciones) -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                <div class="p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Valoraciones y Comentarios</h2>
+
+            <!-- Sidebar con ingredientes -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Ingredientes</h2>
                     
-                    <div class="text-center py-6 text-gray-500">
-                        <i class="fas fa-comments text-4xl text-gray-300 mb-2"></i>
-                        <p>Próximamente, los usuarios podrán dejar valoraciones y comentarios sobre esta receta.</p>
+                    <!-- Mensaje cuando no hay ingredientes -->
+                    <div th:if="${#lists.isEmpty(ingredientes)}" class="text-center py-8">
+                        <i class="fas fa-shopping-basket text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">No hay ingredientes registrados para esta receta.</p>
                     </div>
+                    
+                    <!-- Lista de ingredientes -->
+                    <ul th:unless="${#lists.isEmpty(ingredientes)}" class="space-y-4">
+                        <li th:each="ing : ${ingredientes}" class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-700">
+                                <span class="font-medium" th:text="${ing.cantidad + ' ' + ing.unidad}">100 gr</span>
+                                de <span th:text="${ing.ingrediente.nombre}">Ingrediente</span>
+                            </span>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            
-            <!-- Botones de acción -->
-            <div class="flex flex-col sm:flex-row justify-between">
-                <a th:href="@{/recetas/listar}" class="bg-gray-200 text-gray-700 hover:bg-gray-300 py-2 px-6 rounded-lg flex items-center justify-center mb-3 sm:mb-0">
-                    <i class="fas fa-arrow-left mr-2"></i> Volver a recetas
-                </a>
-                
-                <div class="flex space-x-3">
-                    <button class="bg-green-100 text-green-700 hover:bg-green-200 py-2 px-6 rounded-lg flex items-center">
-                        <i class="fas fa-print mr-2"></i> Imprimir
+        </div>
+    </main>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div id="modal-eliminar" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-5">¿Eliminar receta?</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar esta receta?
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="btn-cancelar" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-24 mr-2">
+                        Cancelar
                     </button>
-                    <button class="bg-blue-100 text-blue-700 hover:bg-blue-200 py-2 px-6 rounded-lg flex items-center">
-                        <i class="fas fa-share-alt mr-2"></i> Compartir
-                    </button>
+                    <form th:action="@{/recetas/eliminar/{id}(id=${receta.id})}" method="get" class="inline">
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 hover:bg-red-700">
+                            Eliminar
+                        </button>
+                    </form>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
+
+    <!-- Scripts -->
+    <script>
+        // Menú desplegable del usuario
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            userMenuButton?.addEventListener('click', function(e) {
+                e.preventDefault();
+                userDropdown?.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (userMenuButton && userDropdown && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        });
+
+        // Modal de confirmación para eliminar
+        function confirmarEliminar() {
+            document.getElementById('modal-eliminar').classList.remove('hidden');
+        }
+
+        document.getElementById('btn-cancelar')?.addEventListener('click', function() {
+            document.getElementById('modal-eliminar').classList.add('hidden');
+        });
+    </script>
+
+    <style>
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+    </style>
 </body>
 </html> 

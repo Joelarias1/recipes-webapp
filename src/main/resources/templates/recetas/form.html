@@ -1,210 +1,437 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${receta.id == null ? 'Nueva Receta' : 'Editar Receta'} + ' - RecetaApp'">Receta - RecetaApp</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <div th:replace="~{layout/base :: body(contenido=~{::main}, titulo=${receta.id == null ? 'Nueva Receta' : 'Editar Receta'} + ' - RecetaApp')}">
-        <main>
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800" th:text="${receta.id == null ? 'Nueva Receta' : 'Editar Receta'}">Receta</h1>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-teal-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold flex items-center">
+                <i class="fas fa-utensils mr-2"></i>
+                RecetaApp
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/recetas/listar}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                    <i class="fas fa-book-open mr-1"></i> Recetas
+                </a>
+                <a th:href="@{/recetas/mis-recetas}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                    <i class="fas fa-user-chef mr-1"></i> Mis Recetas
+                </a>
                 
-                <div class="flex space-x-2">
-                    <a th:if="${receta.id != null}" th:href="@{/recetas/detalle/{id}(id=${receta.id})}" class="bg-blue-100 text-blue-700 hover:bg-blue-200 py-2 px-4 rounded-lg flex items-center">
-                        <i class="fas fa-eye mr-2"></i> Ver Receta
-                    </a>
-                    <a th:href="@{/recetas/mis-recetas}" class="bg-gray-200 text-gray-700 hover:bg-gray-300 py-2 px-4 rounded-lg flex items-center">
-                        <i class="fas fa-arrow-left mr-2"></i> Volver
-                    </a>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                <div class="p-6">
-                    <form th:action="@{/recetas/guardar}" th:object="${receta}" method="post" class="space-y-6">
-                        <!-- Campo ID oculto para edición -->
-                        <input type="hidden" th:field="*{id}">
-                        
-                        <!-- Información básica -->
-                        <div>
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Información básica</h3>
-                            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                                <!-- Nombre -->
-                                <div class="sm:col-span-4">
-                                    <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre de la receta *</label>
-                                    <div class="mt-1">
-                                        <input type="text" id="nombre" name="nombre" th:field="*{nombre}" required
-                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                </div>
-                                
-                                <!-- Dificultad -->
-                                <div class="sm:col-span-2">
-                                    <label for="dificultad" class="block text-sm font-medium text-gray-700">Dificultad *</label>
-                                    <div class="mt-1">
-                                        <select id="dificultad" name="dificultad" th:field="*{dificultad}" required
-                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                            <option value="">Seleccionar</option>
-                                            <option value="FACIL">Fácil</option>
-                                            <option value="MEDIO">Medio</option>
-                                            <option value="DIFICIL">Difícil</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <!-- Descripción -->
-                                <div class="sm:col-span-6">
-                                    <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-                                    <div class="mt-1">
-                                        <textarea id="descripcion" name="descripcion" th:field="*{descripcion}" rows="3"
-                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
-                                    </div>
-                                    <p class="mt-2 text-sm text-gray-500">Breve descripción de la receta. Máximo 1000 caracteres.</p>
-                                </div>
-                                
-                                <!-- Tiempo de preparación -->
-                                <div class="sm:col-span-2">
-                                    <label for="tiempoPreparacion" class="block text-sm font-medium text-gray-700">Tiempo de preparación (min) *</label>
-                                    <div class="mt-1">
-                                        <input type="number" id="tiempoPreparacion" name="tiempoPreparacion" th:field="*{tiempoPreparacion}" required min="1"
-                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                </div>
-                                
-                                <!-- Imagen URL -->
-                                <div class="sm:col-span-4">
-                                    <label for="imagenUrl" class="block text-sm font-medium text-gray-700">URL de la imagen</label>
-                                    <div class="mt-1">
-                                        <input type="url" id="imagenUrl" name="imagenUrl" th:field="*{imagenUrl}"
-                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                    <p class="mt-2 text-sm text-gray-500">URL de una imagen que represente la receta.</p>
-                                </div>
-                                
-                                <!-- Visibilidad -->
-                                <div class="sm:col-span-6">
-                                    <div class="flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="publica" name="publica" type="checkbox" th:field="*{publica}"
-                                                class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="publica" class="font-medium text-gray-700">Receta pública</label>
-                                            <p class="text-gray-500">Si está marcada, la receta será visible para todos los usuarios. De lo contrario, solo tú podrás verla.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="pt-5">
-                            <div class="flex justify-end">
-                                <a th:href="@{/recetas/mis-recetas}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    Cancelar
-                                </a>
-                                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    Guardar
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Secciones para ingredientes y pasos (solo en edición) -->
-            <div th:if="${receta.id != null}" class="space-y-8">
-                <!-- Ingredientes -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="p-6">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Ingredientes</h3>
-                        
-                        <!-- Formulario para añadir ingrediente (Simplificado, debe ser mejorado) -->
-                        <div class="mb-6 p-4 bg-gray-50 rounded-md">
-                            <p class="text-sm text-gray-500 mb-2">Para añadir o modificar ingredientes, por favor utiliza la versión completa de la aplicación.</p>
-                            <div class="text-center">
-                                <button type="button" disabled class="py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 opacity-50 cursor-not-allowed">
-                                    <i class="fas fa-plus mr-2"></i> Añadir Ingrediente
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Lista de ingredientes actuales -->
-                        <div th:if="${ingredientes != null && !ingredientes.isEmpty()}" class="divide-y divide-gray-200">
-                            <div th:each="ing : ${ingredientes}" class="py-3 flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-3"></i>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            <span th:text="${ing.cantidad + ' ' + ing.unidad}">100 gr</span>
-                                            de <span th:text="${ing.ingrediente.nombre}">Ingrediente</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <button type="button" disabled class="text-sm text-red-600 hover:text-red-900 opacity-50 cursor-not-allowed">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Mensaje cuando no hay ingredientes -->
-                        <div th:if="${ingredientes == null || ingredientes.isEmpty()}" class="text-center py-4 text-gray-500">
-                            <p>No hay ingredientes registrados para esta receta.</p>
-                        </div>
+                <!-- Menú del usuario -->
+                <div class="dropdown relative" sec:authorize="isAuthenticated()">
+                    <button id="user-menu-button" class="flex items-center hover:text-teal-200 focus:outline-none">
+                        <span sec:authentication="name">Usuario</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="dropdown-menu w-48 py-2 mt-2 bg-white rounded-md shadow-lg">
+                        <a th:href="@{/perfil}" class="block px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                            <i class="fas fa-user-circle mr-2"></i> Mi Perfil
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-teal-500 hover:text-white">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </form>
                     </div>
                 </div>
                 
-                <!-- Pasos de preparación -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="p-6">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Pasos de preparación</h3>
-                        
-                        <!-- Formulario para añadir paso (Simplificado, debe ser mejorado) -->
-                        <div class="mb-6 p-4 bg-gray-50 rounded-md">
-                            <p class="text-sm text-gray-500 mb-2">Para añadir o modificar pasos, por favor utiliza la versión completa de la aplicación.</p>
-                            <div class="text-center">
-                                <button type="button" disabled class="py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 opacity-50 cursor-not-allowed">
-                                    <i class="fas fa-plus mr-2"></i> Añadir Paso
-                                </button>
+                <!-- Enlaces de autenticación -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="text-white hover:text-teal-200 px-2 py-1 rounded">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800" th:text="${receta.id == null ? 'Nueva Receta' : 'Editar Receta'}">Nueva Receta</h1>
+            
+            <div class="flex space-x-2">
+                <a th:if="${receta.id != null}" th:href="@{/recetas/detalle/{id}(id=${receta.id})}" 
+                   class="bg-blue-100 text-blue-700 hover:bg-blue-200 py-2 px-4 rounded-lg flex items-center">
+                    <i class="fas fa-eye mr-2"></i> Ver Receta
+                </a>
+                <a th:href="@{/recetas/mis-recetas}" class="bg-gray-200 text-gray-700 hover:bg-gray-300 py-2 px-4 rounded-lg flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver
+                </a>
+            </div>
+        </div>
+
+        <!-- Formulario -->
+        <form th:action="@{/recetas/guardar}" th:object="${receta}" method="post" class="space-y-6">
+            <!-- Token CSRF -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            
+            <!-- Campo ID oculto para edición -->
+            <input type="hidden" th:field="*{id}">
+            
+            <!-- Campo fechaCreacion oculto para edición -->
+            <input type="hidden" th:if="${receta.fechaCreacion != null}" th:field="*{fechaCreacion}">
+            
+            <!-- Campo creador oculto para edición -->
+            <input type="hidden" th:if="${receta.creador != null}" th:field="*{creador.id}" name="creador.id">
+            
+            <!-- Información básica -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Información básica</h2>
+                
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <!-- Nombre -->
+                    <div class="col-span-2">
+                        <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre de la receta *</label>
+                        <input type="text" id="nombre" th:field="*{nombre}" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                        <p class="mt-1 text-sm text-gray-500">Elige un nombre descriptivo para tu receta.</p>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="col-span-2">
+                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea id="descripcion" th:field="*{descripcion}" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"></textarea>
+                        <p class="mt-1 text-sm text-gray-500">Describe brevemente tu receta. Máximo 1000 caracteres.</p>
+                    </div>
+
+                    <!-- Tiempo de preparación -->
+                    <div>
+                        <label for="tiempoPreparacion" class="block text-sm font-medium text-gray-700">Tiempo de preparación (minutos) *</label>
+                        <input type="number" id="tiempoPreparacion" th:field="*{tiempoPreparacion}" required min="1"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                    </div>
+
+                    <!-- Dificultad -->
+                    <div>
+                        <label for="dificultad" class="block text-sm font-medium text-gray-700">Dificultad *</label>
+                        <select id="dificultad" th:field="*{dificultad}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                            <option value="">Seleccionar dificultad</option>
+                            <option value="FACIL">Fácil</option>
+                            <option value="MEDIO">Media</option>
+                            <option value="DIFICIL">Difícil</option>
+                        </select>
+                    </div>
+
+                    <!-- URL de la imagen -->
+                    <div class="col-span-2">
+                        <label for="imagenUrl" class="block text-sm font-medium text-gray-700">URL de la imagen</label>
+                        <input type="url" id="imagenUrl" th:field="*{imagenUrl}"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                        <p class="mt-1 text-sm text-gray-500">URL de una imagen que represente tu receta.</p>
+                    </div>
+
+                    <!-- Visibilidad -->
+                    <div class="col-span-2">
+                        <div class="relative flex items-start">
+                            <div class="flex h-5 items-center">
+                                <input type="checkbox" id="publica" th:field="*{publica}"
+                                       class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500">
                             </div>
-                        </div>
-                        
-                        <!-- Lista de pasos actuales -->
-                        <div th:if="${pasos != null && !pasos.isEmpty()}" class="space-y-6">
-                            <div th:each="paso : ${pasos}" class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                                <div class="flex">
-                                    <div class="flex-shrink-0 mr-4">
-                                        <span class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
-                                            <span th:text="${paso.numeroOrden}">1</span>
-                                        </span>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <p class="text-gray-700" th:text="${paso.descripcion}">Descripción del paso...</p>
-                                        
-                                        <!-- Imagen del paso, si existe -->
-                                        <div th:if="${paso.imagenUrl}" class="mt-3">
-                                            <img th:src="${paso.imagenUrl}" alt="Imagen del paso" class="rounded-lg max-h-48">
-                                        </div>
-                                    </div>
-                                    <div class="ml-3">
-                                        <button type="button" disabled class="text-sm text-red-600 hover:text-red-900 opacity-50 cursor-not-allowed">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                            <div class="ml-3 text-sm">
+                                <label for="publica" class="font-medium text-gray-700">Receta pública</label>
+                                <p class="text-gray-500">Si está marcada, la receta será visible para todos los usuarios.</p>
                             </div>
-                        </div>
-                        
-                        <!-- Mensaje cuando no hay pasos -->
-                        <div th:if="${pasos == null || pasos.isEmpty()}" class="text-center py-4 text-gray-500">
-                            <p>No hay pasos de preparación registrados para esta receta.</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+
+            <!-- Botones de acción -->
+            <div class="flex justify-end space-x-3">
+                <a th:href="@{/recetas/mis-recetas}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                    Guardar
+                </button>
+            </div>
+        </form>
+
+        <!-- Secciones adicionales (solo en edición) -->
+        <div th:if="${receta.id != null}" class="mt-8 space-y-6">
+            <!-- Ingredientes -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Ingredientes</h2>
+                    <button type="button" onclick="mostrarModalIngrediente()"
+                            class="bg-teal-100 text-teal-700 hover:bg-teal-200 py-2 px-4 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Agregar Ingrediente
+                    </button>
+                </div>
+
+                <!-- Lista de ingredientes -->
+                <div th:if="${#lists.isEmpty(ingredientes)}" class="text-center py-8">
+                    <i class="fas fa-shopping-basket text-gray-300 text-5xl mb-4"></i>
+                    <p class="text-gray-500">No hay ingredientes registrados para esta receta.</p>
+                </div>
+
+                <ul th:unless="${#lists.isEmpty(ingredientes)}" class="divide-y divide-gray-200">
+                    <li th:each="ing : ${ingredientes}" class="py-4 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-teal-500 mr-3"></i>
+                            <span class="text-gray-900">
+                                <span class="font-medium" th:text="${ing.cantidad + ' ' + ing.unidad}">100 gr</span>
+                                de <span th:text="${ing.ingrediente.nombre}">Ingrediente</span>
+                            </span>
+                        </div>
+                        <button type="button" th:onclick="'eliminarIngrediente(' + ${ing.id} + ')'"
+                                class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Pasos -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Pasos de preparación</h2>
+                    <button type="button" onclick="mostrarModalPaso()"
+                            class="bg-teal-100 text-teal-700 hover:bg-teal-200 py-2 px-4 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Agregar Paso
+                    </button>
+                </div>
+
+                <!-- Lista de pasos -->
+                <div th:if="${#lists.isEmpty(pasos)}" class="text-center py-8">
+                    <i class="fas fa-list text-gray-300 text-5xl mb-4"></i>
+                    <p class="text-gray-500">No hay pasos registrados para esta receta.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(pasos)}" class="space-y-6">
+                    <div th:each="paso : ${pasos}" class="flex">
+                        <div class="flex-shrink-0 mr-4">
+                            <div class="w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold">
+                                <span th:text="${paso.numeroOrden}">1</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow">
+                            <p class="text-gray-700 mb-2" th:text="${paso.descripcion}">Descripción del paso...</p>
+                            <img th:if="${paso.imagenUrl}" th:src="${paso.imagenUrl}" alt="Imagen del paso" 
+                                 class="mt-2 rounded-lg shadow-sm max-h-48 object-cover">
+                            <div class="mt-2 flex justify-end">
+                                <button type="button" th:onclick="'eliminarPaso(' + ${paso.id} + ')'"
+                                        class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para agregar ingrediente -->
+    <div id="modal-ingrediente" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Agregar Ingrediente</h3>
+                <form id="form-ingrediente" th:action="@{/recetas/{id}/ingredientes(id=${receta.id})}" method="post" class="space-y-4">
+                    <!-- Token CSRF -->
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div>
+                        <label for="ingredienteId" class="block text-sm font-medium text-gray-700">Ingrediente *</label>
+                        <select id="ingredienteId" name="ingredienteId" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                            <option value="">Seleccionar ingrediente</option>
+                            <option th:each="ing : ${ingredientesDisponibles}" 
+                                    th:value="${ing.id}" 
+                                    th:text="${ing.nombre}">Ingrediente</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="cantidad" class="block text-sm font-medium text-gray-700">Cantidad *</label>
+                        <input type="text" id="cantidad" name="cantidad" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label for="unidad" class="block text-sm font-medium text-gray-700">Unidad *</label>
+                        <select id="unidad" name="unidad" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                            <option value="">Seleccionar unidad</option>
+                            <option value="gramos">Gramos (g)</option>
+                            <option value="kilogramos">Kilogramos (kg)</option>
+                            <option value="mililitros">Mililitros (ml)</option>
+                            <option value="litros">Litros (l)</option>
+                            <option value="cucharadas">Cucharadas</option>
+                            <option value="cucharaditas">Cucharaditas</option>
+                            <option value="tazas">Tazas</option>
+                            <option value="unidades">Unidades</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" onclick="cerrarModalIngrediente()"
+                                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700">
+                            Agregar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <!-- Modal para agregar paso -->
+    <div id="modal-paso" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Agregar Paso</h3>
+                <form id="form-paso" th:action="@{/recetas/{id}/pasos(id=${receta.id})}" method="post" class="space-y-4">
+                    <!-- Token CSRF -->
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div>
+                        <label for="numeroOrden" class="block text-sm font-medium text-gray-700">Número de orden *</label>
+                        <input type="number" id="numeroOrden" name="numeroOrden" required min="1"
+                               th:value="${#lists.isEmpty(pasos)} ? 1 : ${#lists.size(pasos) + 1}"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label for="descripcionPaso" class="block text-sm font-medium text-gray-700">Descripción *</label>
+                        <textarea id="descripcionPaso" name="descripcion" required rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="imagenUrlPaso" class="block text-sm font-medium text-gray-700">URL de la imagen</label>
+                        <input type="url" id="imagenUrlPaso" name="imagenUrl"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" onclick="cerrarModalPaso()"
+                                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700">
+                            Agregar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Menú desplegable del usuario
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            userMenuButton?.addEventListener('click', function(e) {
+                e.preventDefault();
+                userDropdown?.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (userMenuButton && userDropdown && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        });
+
+        // Funciones para el modal de ingredientes
+        function mostrarModalIngrediente() {
+            document.getElementById('modal-ingrediente').classList.remove('hidden');
+        }
+
+        function cerrarModalIngrediente() {
+            document.getElementById('modal-ingrediente').classList.add('hidden');
+        }
+
+        // Funciones para el modal de pasos
+        function mostrarModalPaso() {
+            document.getElementById('modal-paso').classList.remove('hidden');
+        }
+
+        function cerrarModalPaso() {
+            document.getElementById('modal-paso').classList.add('hidden');
+        }
+
+        // Función para eliminar ingrediente
+        function eliminarIngrediente(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este ingrediente?')) {
+                const recetaId = document.querySelector('input[name="id"]').value;
+                const csrfToken = document.querySelector('input[name="_csrf"]').value;
+                const csrfHeader = document.querySelector('input[name="_csrf"]').getAttribute('name');
+                
+                // Crear un formulario dinámico para enviar la petición POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/recetas/${recetaId}/ingredientes/${id}/eliminar`;
+                
+                // Agregar token CSRF
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = csrfHeader;
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Función para eliminar paso
+        function eliminarPaso(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este paso?')) {
+                const recetaId = document.querySelector('input[name="id"]').value;
+                const csrfToken = document.querySelector('input[name="_csrf"]').value;
+                const csrfHeader = document.querySelector('input[name="_csrf"]').getAttribute('name');
+                
+                // Crear un formulario dinámico para enviar la petición POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/recetas/${recetaId}/pasos/${id}/eliminar`;
+                
+                // Agregar token CSRF
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = csrfHeader;
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+
+    <style>
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+    </style>
 </body>
 </html> 
