@@ -62,3 +62,6 @@ ojdbc.properties
 sqlnet.ora
 tnsnames.ora
 truststore.jks
+
+# Environment variables
+.env
