@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Error Interno del Servidor</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .error-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold">RecetaApp</a>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a th:href="@{/}" class="hover:text-green-200">Inicio</a>
+                <a th:href="@{/recetas/listar}" class="hover:text-green-200">Recetas</a>
+                <a th:href="@{/recetas/buscar}" class="hover:text-green-200">Buscar</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
+        <div class="max-w-2xl w-full">
+            <div class="error-gradient rounded-t-lg p-8 text-center">
+                <div class="bg-white bg-opacity-20 w-24 h-24 flex items-center justify-center mx-auto rounded-full mb-4">
+                    <i class="fas fa-server text-white text-4xl"></i>
+                </div>
+                <h1 class="text-white text-5xl font-bold mb-2">500</h1>
+                <p class="text-white text-xl">Error Interno del Servidor</p>
+            </div>
+            
+            <div class="bg-white rounded-b-lg shadow-md p-8">
+                <p class="text-gray-600 mb-6 text-center text-lg">Lo sentimos, algo salió mal en nuestro servidor mientras procesaba tu solicitud.</p>
+                
+                <div class="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-purple-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-purple-700">
+                                No te preocupes, ya hemos sido notificados del problema y estamos trabajando para solucionarlo lo antes posible.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información técnica para administradores -->
+                <div sec:authorize="hasRole('ADMIN')" class="my-6 p-4 bg-gray-100 rounded-lg text-sm">
+                    <h3 class="font-bold text-gray-700 mb-2">Información de depuración</h3>
+                    <div th:if="${timestamp != null}" class="mb-1">
+                        <span class="font-semibold">Fecha:</span> 
+                        <span th:text="${#dates.format(timestamp, 'dd-MM-yyyy HH:mm:ss')}">01-01-2023 12:00:00</span>
+                    </div>
+                    <div th:if="${exception != null}" class="mb-1">
+                        <span class="font-semibold">Excepción:</span> 
+                        <span th:text="${exception}">java.lang.Exception</span>
+                    </div>
+                    <div th:if="${message != null}" class="mb-1">
+                        <span class="font-semibold">Mensaje:</span> 
+                        <span th:text="${message}">Error message</span>
+                    </div>
+                    <div th:if="${trace != null}" class="mt-2">
+                        <details>
+                            <summary class="cursor-pointer text-green-600 hover:text-green-800">Ver stack trace</summary>
+                            <pre class="mt-2 text-xs p-2 bg-gray-200 rounded overflow-x-auto whitespace-pre-wrap" th:text="${trace}">Stack trace</pre>
+                        </details>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-4 justify-center mt-8">
+                    <a th:href="@{/}" class="bg-green-600 text-white hover:bg-green-700 py-3 px-6 rounded-lg text-center transition-colors">
+                        <i class="fas fa-home mr-2"></i>Volver al inicio
+                    </a>
+                    <a href="javascript:history.back()" class="bg-gray-200 text-gray-800 hover:bg-gray-300 py-3 px-6 rounded-lg text-center transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver atrás
+                    </a>
+                    <button onclick="window.location.reload()" class="bg-indigo-600 text-white hover:bg-indigo-700 py-3 px-6 rounded-lg text-center transition-colors">
+                        <i class="fas fa-redo-alt mr-2"></i>Intentar de nuevo
+                    </button>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">¿Qué puedes hacer ahora?</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>Intenta recargar la página para ver si el problema se resuelve.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>Regresa más tarde, es posible que estemos realizando mantenimiento.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>Si el problema persiste, puedes <a href="#" class="text-green-600 hover:underline">contactar con soporte</a>.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">&copy; 2023 RecetaApp - Todos los derechos reservados</p>
+        </div>
+    </footer>
+</body>
+</html> 

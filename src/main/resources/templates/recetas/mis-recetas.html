@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Recetas - RecetaApp</title>
+</head>
+<body>
+    <div th:replace="~{layout/base :: body(contenido=~{::main}, titulo='Mis Recetas - RecetaApp')}">
+        <main>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Mis Recetas</h1>
+                
+                <a th:href="@{/recetas/nueva}" class="bg-green-600 text-white hover:bg-green-700 py-2 px-4 rounded-lg flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Nueva Receta
+                </a>
+            </div>
+            
+            <!-- Mensaje cuando no hay recetas -->
+            <div th:if="${#lists.isEmpty(recetas)}" class="text-center py-12 bg-white rounded-lg shadow-md">
+                <i class="fas fa-utensils text-green-300 text-5xl mb-4"></i>
+                <p class="text-gray-500 text-xl mb-4">Aún no has creado ninguna receta.</p>
+                <a th:href="@{/recetas/nueva}" class="bg-green-600 text-white hover:bg-green-700 py-2 px-6 rounded-lg inline-block">
+                    Crear mi primera receta
+                </a>
+            </div>
+            
+            <!-- Tabla de recetas -->
+            <div th:unless="${#lists.isEmpty(recetas)}" class="bg-white rounded-lg shadow-md overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Receta
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Dificultad
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tiempo
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Estado
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr th:each="receta : ${recetas}">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded overflow-hidden">
+                                        <img th:if="${receta.imagenUrl}" th:src="${receta.imagenUrl}" alt="Imagen de receta" class="h-full w-full object-cover">
+                                        <div th:unless="${receta.imagenUrl}" class="h-full w-full flex items-center justify-center bg-green-100">
+                                            <i class="fas fa-utensils text-green-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900" th:text="${receta.nombre}">
+                                            Nombre de la receta
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            <span th:text="${#temporals.format(receta.fechaCreacion, 'dd/MM/yyyy')}">01/01/2023</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span th:if="${receta.dificultad == 'FACIL'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Fácil
+                                </span>
+                                <span th:if="${receta.dificultad == 'MEDIO'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    Medio
+                                </span>
+                                <span th:if="${receta.dificultad == 'DIFICIL'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Difícil
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <i class="far fa-clock mr-1"></i> <span th:text="${receta.tiempoPreparacion + ' min'}">30 min</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span th:if="${receta.publica}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Pública
+                                </span>
+                                <span th:unless="${receta.publica}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Privada
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
+                                    <a th:href="@{/recetas/detalle/{id}(id=${receta.id})}" class="text-indigo-600 hover:text-indigo-900">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:href="@{/recetas/editar/{id}(id=${receta.id})}" class="text-blue-600 hover:text-blue-900">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a th:href="@{/recetas/eliminar/{id}(id=${receta.id})}" 
+                                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta receta?')"
+                                       class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html> 

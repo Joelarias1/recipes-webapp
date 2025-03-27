@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recetas - RecetaApp</title>
+</head>
+<body>
+    <div th:replace="~{layout/base :: body(contenido=~{::main}, titulo='Recetas - RecetaApp')}">
+        <main>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Todas las recetas</h1>
+                
+                <div class="flex space-x-2">
+                    <a th:href="@{/recetas/buscar}" class="bg-green-100 text-green-700 hover:bg-green-200 py-2 px-4 rounded-lg flex items-center">
+                        <i class="fas fa-search mr-2"></i> Buscar
+                    </a>
+                    <a th:href="@{/recetas/nueva}" class="bg-green-600 text-white hover:bg-green-700 py-2 px-4 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Nueva Receta
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Mensaje cuando no hay recetas -->
+            <div th:if="${#lists.isEmpty(recetas)}" class="text-center py-12 bg-gray-50 rounded-lg">
+                <i class="fas fa-utensils text-green-300 text-5xl mb-4"></i>
+                <p class="text-gray-500 text-xl mb-4">No hay recetas disponibles todavía.</p>
+                <a th:href="@{/recetas/nueva}" class="bg-green-600 text-white hover:bg-green-700 py-2 px-6 rounded-lg inline-block">
+                    Crear mi primera receta
+                </a>
+            </div>
+            
+            <!-- Grid de recetas -->
+            <div th:unless="${#lists.isEmpty(recetas)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div th:each="receta : ${recetas}" class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:transform hover:scale-105">
+                    <div class="h-48 bg-gray-200 relative">
+                        <img th:if="${receta.imagenUrl}" th:src="${receta.imagenUrl}" alt="Imagen de receta" class="w-full h-full object-cover">
+                        <div th:unless="${receta.imagenUrl}" class="w-full h-full flex items-center justify-center bg-green-100">
+                            <i class="fas fa-utensils text-4xl text-green-400"></i>
+                        </div>
+                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                            <span th:text="${receta.dificultad}">FÁCIL</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-800 mb-2" th:text="${receta.nombre}">Nombre de la receta</h3>
+                        <p class="text-gray-600 mb-3 line-clamp-2" th:text="${receta.descripcion}">Descripción de la receta</p>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">
+                                <i class="far fa-clock mr-1"></i>
+                                <span th:text="${receta.tiempoPreparacion + ' min'}">30 min</span>
+                            </span>
+                            
+                            <a th:href="@{/recetas/detalle/{id}(id=${receta.id})}" class="text-green-600 hover:text-green-800 font-medium">
+                                Ver receta
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Paginación (para implementar en futuras versiones) -->
+            <div class="mt-8 flex justify-center">
+                <nav class="flex items-center">
+                    <a href="#" class="px-3 py-1 rounded-l-md bg-gray-200 text-gray-700 hover:bg-gray-300">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a href="#" class="px-3 py-1 bg-green-600 text-white">1</a>
+                    <a href="#" class="px-3 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300">2</a>
+                    <a href="#" class="px-3 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300">3</a>
+                    <a href="#" class="px-3 py-1 rounded-r-md bg-gray-200 text-gray-700 hover:bg-gray-300">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </nav>
+            </div>
+        </main>
+    </div>
+</body>
+</html> 

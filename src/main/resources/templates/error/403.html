@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 - Acceso Denegado</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .error-gradient {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold">RecetaApp</a>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a th:href="@{/}" class="hover:text-green-200">Inicio</a>
+                <a th:href="@{/recetas/listar}" class="hover:text-green-200">Recetas</a>
+                <a th:href="@{/recetas/buscar}" class="hover:text-green-200">Buscar</a>
+                
+                <!-- Menú para usuarios autenticados -->
+                <div sec:authorize="isAuthenticated()" class="dropdown relative">
+                    <button id="user-menu-button" class="flex items-center hover:text-green-200 focus:outline-none">
+                        <span sec:authentication="name">Usuario</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="dropdown-menu w-48 py-2 mt-2 bg-white rounded-md shadow-lg">
+                        <a th:href="@{/recetas/mis-recetas}" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                            Mis Recetas
+                        </a>
+                        <a th:href="@{/recetas/nueva}" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                            Nueva Receta
+                        </a>
+                        <div sec:authorize="hasRole('ADMIN')" class="border-t border-gray-200 my-1"></div>
+                        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                            Administración
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Enlaces para usuarios no autenticados -->
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="bg-white text-green-600 hover:bg-green-200 py-2 px-4 rounded">
+                    Iniciar Sesión
+                </a>
+            </nav>
+            
+            <!-- Menú móvil -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-white focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
+        <div class="max-w-2xl w-full">
+            <div class="error-gradient rounded-t-lg p-8 text-center">
+                <div class="bg-white bg-opacity-20 w-24 h-24 flex items-center justify-center mx-auto rounded-full mb-4">
+                    <i class="fas fa-lock text-white text-4xl"></i>
+                </div>
+                <h1 class="text-white text-5xl font-bold mb-2">403</h1>
+                <p class="text-white text-xl">Acceso Denegado</p>
+            </div>
+            
+            <div class="bg-white rounded-b-lg shadow-md p-8">
+                <p class="text-gray-600 mb-6 text-center text-lg">Lo sentimos, no tienes permiso para acceder a esta página.</p>
+                
+                <div sec:authorize="!isAuthenticated()" class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                Parece que no has iniciado sesión. 
+                                <a th:href="@{/login}" class="font-medium underline hover:text-blue-500">
+                                    Iniciar sesión
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div sec:authorize="isAuthenticated()" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                Tu cuenta no tiene los permisos necesarios para acceder a esta página.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-4 justify-center mt-8">
+                    <a th:href="@{/}" class="bg-green-600 text-white hover:bg-green-700 py-3 px-6 rounded-lg text-center transition-colors">
+                        <i class="fas fa-home mr-2"></i>Volver al inicio
+                    </a>
+                    <a href="javascript:history.back()" class="bg-gray-200 text-gray-800 hover:bg-gray-300 py-3 px-6 rounded-lg text-center transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver atrás
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">&copy; 2023 RecetaApp - Todos los derechos reservados</p>
+        </div>
+    </footer>
+
+    <!-- Estilos para el menú desplegable -->
+    <style>
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menú móvil
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle?.addEventListener('click', function() {
+                if (mobileMenu) {
+                    mobileMenu.classList.toggle('hidden');
+                }
+            });
+            
+            // Menú desplegable del usuario
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            // Manejo con click para mejor soporte en dispositivos móviles
+            userMenuButton?.addEventListener('click', function(e) {
+                e.preventDefault();
+                userDropdown?.classList.toggle('active');
+            });
+            
+            // Cerrar menú al hacer clic fuera de él
+            document.addEventListener('click', function(e) {
+                if (userMenuButton && userDropdown && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

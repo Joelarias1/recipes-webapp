@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'Sistema de Recetas'">Sistema de Recetas</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body th:fragment="body(content, title)" class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-2xl font-bold">RecetaApp</a>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a th:href="@{/}" class="hover:text-green-200">Inicio</a>
+                <a th:href="@{/recetas/listar}" class="hover:text-green-200">Recetas</a>
+                <a th:href="@{/recetas/buscar}" class="hover:text-green-200">Buscar</a>
+                
+                <!-- Menú para usuarios autenticados -->
+                <div sec:authorize="isAuthenticated()" class="relative group">
+                    <button class="flex items-center hover:text-green-200">
+                        <span sec:authentication="name">Usuario</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div class="absolute right-0 w-48 py-2 mt-2 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                        <a th:href="@{/recetas/mis-recetas}" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                            Mis Recetas
+                        </a>
+                        <a th:href="@{/recetas/nueva}" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                            Nueva Receta
+                        </a>
+                        <div sec:authorize="hasRole('ADMIN')" class="border-t border-gray-200 my-1"></div>
+                        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                            Administración
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Enlaces para usuarios no autenticados -->
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="bg-white text-green-600 hover:bg-green-200 py-2 px-4 rounded">
+                    Iniciar Sesión
+                </a>
+            </nav>
+            
+            <!-- Menú móvil -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-white focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Menú móvil desplegable -->
+        <div id="mobile-menu" class="md:hidden hidden bg-green-700 pb-4">
+            <div class="container mx-auto px-4 flex flex-col space-y-3">
+                <a th:href="@{/}" class="text-white py-2 hover:text-green-200">Inicio</a>
+                <a th:href="@{/recetas/listar}" class="text-white py-2 hover:text-green-200">Recetas</a>
+                <a th:href="@{/recetas/buscar}" class="text-white py-2 hover:text-green-200">Buscar</a>
+                
+                <!-- Enlaces para usuarios autenticados (versión móvil) -->
+                <div sec:authorize="isAuthenticated()">
+                    <div class="border-t border-green-600 my-2"></div>
+                    <span class="text-white font-medium" sec:authentication="name">Usuario</span>
+                    <a th:href="@{/recetas/mis-recetas}" class="block text-white py-2 hover:text-green-200">
+                        Mis Recetas
+                    </a>
+                    <a th:href="@{/recetas/nueva}" class="block text-white py-2 hover:text-green-200">
+                        Nueva Receta
+                    </a>
+                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="block text-white py-2 hover:text-green-200">
+                        Administración
+                    </a>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="text-white py-2 hover:text-green-200 w-full text-left">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Enlaces para usuarios no autenticados (versión móvil) -->
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="text-center bg-white text-green-600 hover:bg-green-200 py-2 px-4 rounded">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container mx-auto p-4 flex-grow">
+        <div th:if="${mensaje}" class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+            <p th:text="${mensaje}">Mensaje de éxito</p>
+        </div>
+        
+        <div th:if="${error}" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+            <p th:text="${error}">Mensaje de error</p>
+        </div>
+        
+        <div th:insert="${content}">
+            Contenido por defecto
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-xl font-bold">RecetaApp</h2>
+                    <p class="text-gray-400">Comparte y descubre recetas deliciosas</p>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 text-center text-gray-400 text-sm">
+                &copy; 2023 RecetaApp - Todos los derechos reservados
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html> 

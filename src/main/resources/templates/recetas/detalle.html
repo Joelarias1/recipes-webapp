@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Receta - RecetaApp</title>
+</head>
+<body>
+    <div th:replace="~{layout/base :: body(contenido=~{::main}, titulo='Detalle de Receta - RecetaApp')}">
+        <main>
+            <!-- Encabezado y acciones -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2" th:text="${receta.nombre}">Nombre de la Receta</h1>
+                    <p class="text-gray-600">
+                        <span class="mr-3">
+                            <i class="far fa-clock mr-1"></i>
+                            <span th:text="${receta.tiempoPreparacion + ' min'}">30 min</span>
+                        </span>
+                        <span class="mr-3">
+                            <i class="fas fa-signal mr-1"></i>
+                            <span th:text="${receta.dificultad}">FÁCIL</span>
+                        </span>
+                        <span>
+                            <i class="far fa-user mr-1"></i>
+                            <span th:text="${receta.creador.nombre + ' ' + receta.creador.apellido}">Chef</span>
+                        </span>
+                    </p>
+                </div>
+                
+                <!-- Acciones de edición para el propietario o admin -->
+                <div class="mt-4 md:mt-0 flex space-x-2" 
+                     th:if="${#authentication.isAuthenticated() && (#authentication.name == receta.creador.username || #authorization.expression('hasRole(''ADMIN'')'))}">
+                    <a th:href="@{/recetas/editar/{id}(id=${receta.id})}" class="bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded-lg flex items-center">
+                        <i class="fas fa-edit mr-2"></i> Editar
+                    </a>
+                    <a th:href="@{/recetas/eliminar/{id}(id=${receta.id})}" 
+                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta receta?')"
+                       class="bg-red-600 text-white hover:bg-red-700 py-2 px-4 rounded-lg flex items-center">
+                        <i class="fas fa-trash-alt mr-2"></i> Eliminar
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Imagen y descripción -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="h-96 bg-gray-200 relative">
+                    <img th:if="${receta.imagenUrl}" th:src="${receta.imagenUrl}" alt="Imagen de receta" class="w-full h-full object-cover">
+                    <div th:unless="${receta.imagenUrl}" class="w-full h-full flex items-center justify-center bg-green-100">
+                        <i class="fas fa-utensils text-6xl text-green-400"></i>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Descripción</h2>
+                        <p class="text-gray-700" th:text="${receta.descripcion}">Descripción detallada de la receta...</p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Ingredientes</h2>
+                        
+                        <!-- Mensaje cuando no hay ingredientes -->
+                        <div th:if="${#lists.isEmpty(ingredientes)}" class="text-gray-500 italic">
+                            No hay ingredientes registrados para esta receta.
+                        </div>
+                        
+                        <!-- Lista de ingredientes -->
+                        <ul th:unless="${#lists.isEmpty(ingredientes)}" class="space-y-2">
+                            <li th:each="ing : ${ingredientes}" class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>
+                                    <span class="font-medium" th:text="${ing.cantidad + ' ' + ing.unidad}">100 gr</span>
+                                    de <span th:text="${ing.ingrediente.nombre}">Ingrediente</span>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pasos de preparación -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Preparación</h2>
+                    
+                    <!-- Mensaje cuando no hay pasos -->
+                    <div th:if="${#lists.isEmpty(pasos)}" class="text-gray-500 italic">
+                        No hay pasos de preparación registrados para esta receta.
+                    </div>
+                    
+                    <!-- Lista de pasos -->
+                    <div th:unless="${#lists.isEmpty(pasos)}" class="space-y-6">
+                        <div th:each="paso : ${pasos}" class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+                            <div class="flex">
+                                <div class="flex-shrink-0 mr-4">
+                                    <span class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                                        <span th:text="${paso.numeroOrden}">1</span>
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700" th:text="${paso.descripcion}">Descripción del paso...</p>
+                                    
+                                    <!-- Imagen del paso, si existe -->
+                                    <div th:if="${paso.imagenUrl}" class="mt-3">
+                                        <img th:src="${paso.imagenUrl}" alt="Imagen del paso" class="rounded-lg max-h-48">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de valoraciones y comentarios (para futuras implementaciones) -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Valoraciones y Comentarios</h2>
+                    
+                    <div class="text-center py-6 text-gray-500">
+                        <i class="fas fa-comments text-4xl text-gray-300 mb-2"></i>
+                        <p>Próximamente, los usuarios podrán dejar valoraciones y comentarios sobre esta receta.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="flex flex-col sm:flex-row justify-between">
+                <a th:href="@{/recetas/listar}" class="bg-gray-200 text-gray-700 hover:bg-gray-300 py-2 px-6 rounded-lg flex items-center justify-center mb-3 sm:mb-0">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver a recetas
+                </a>
+                
+                <div class="flex space-x-3">
+                    <button class="bg-green-100 text-green-700 hover:bg-green-200 py-2 px-6 rounded-lg flex items-center">
+                        <i class="fas fa-print mr-2"></i> Imprimir
+                    </button>
+                    <button class="bg-blue-100 text-blue-700 hover:bg-blue-200 py-2 px-6 rounded-lg flex items-center">
+                        <i class="fas fa-share-alt mr-2"></i> Compartir
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html> 
