@@ -37,6 +37,10 @@ public class RecetaService {
         return recetaRepository.findByNombreContainingIgnoreCaseAndPublicaTrue(nombre);
     }
     
+    public List<Receta> buscarRecetasPorDificultad(String dificultad) {
+        return recetaRepository.findByDificultadAndPublicaTrue(dificultad);
+    }
+    
     public List<Receta> listarRecetasPorUsuario(Long usuarioId) {
         return recetaRepository.findByCreadorId(usuarioId);
     }

@@ -13,6 +13,8 @@ public interface RecetaRepository extends JpaRepository<Receta, Long> {
     
     List<Receta> findByPublicaTrue();
     
+    List<Receta> findByDificultadAndPublicaTrue(String dificultad);
+    
     @Query("SELECT r FROM Receta r WHERE r.publica = true ORDER BY r.fechaCreacion DESC")
     List<Receta> findRecentPublicRecipes();
     

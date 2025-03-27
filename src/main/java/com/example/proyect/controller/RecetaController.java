@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -26,20 +27,53 @@ public class RecetaController {
 
     @GetMapping("/listar")
     public String listarRecetas(Model model) {
-        model.addAttribute("recetas", recetaService.listarRecetasPublicas());
+        List<Receta> recetasRecientes = recetaService.listarRecetasRecientes();
+        List<Receta> recetasPopulares = recetaService.listarRecetasPublicas();
+        
+        model.addAttribute("recetasRecientes", recetasRecientes);
+        model.addAttribute("recetasPopulares", recetasPopulares);
         return "recetas/listar";
     }
     
     @GetMapping("/buscar")
-    public String buscarRecetas(@RequestParam(required = false) String nombre, Model model) {
-        List<Receta> recetas;
+    public String buscarRecetas(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String tipoCocina,
+            @RequestParam(required = false) String ingrediente,
+            @RequestParam(required = false) String pais,
+            @RequestParam(required = false) String dificultad,
+            Model model) {
         
-        if (nombre != null && !nombre.isEmpty()) {
-            recetas = recetaService.buscarRecetasPorNombre(nombre);
-            model.addAttribute("terminoBusqueda", nombre);
+        List<Receta> recetas;
+        boolean busquedaRealizada = nombre != null || tipoCocina != null || 
+                                   ingrediente != null || pais != null || 
+                                   dificultad != null;
+        
+        if (busquedaRealizada) {
+            // Por ahora solo implementamos búsqueda por nombre y dificultad
+            // Los demás filtros se implementarán cuando tengamos las tablas correspondientes
+            if (nombre != null && !nombre.isEmpty()) {
+                recetas = recetaService.buscarRecetasPorNombre(nombre);
+            } else if (dificultad != null && !dificultad.isEmpty()) {
+                recetas = recetaService.buscarRecetasPorDificultad(dificultad);
+            } else {
+                recetas = recetaService.listarRecetasPublicas();
+            }
+            model.addAttribute("busquedaRealizada", true);
         } else {
             recetas = recetaService.listarRecetasPublicas();
+            model.addAttribute("busquedaRealizada", false);
         }
+        
+        // Agregar parámetros de búsqueda al modelo
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("tipoCocina", tipoCocina);
+        model.addAttribute("ingrediente", ingrediente);
+        model.addAttribute("pais", pais);
+        model.addAttribute("dificultad", dificultad);
+        
+        // Lista de dificultades para el selector
+        model.addAttribute("dificultades", Arrays.asList("FACIL", "MEDIO", "DIFICIL"));
         
         model.addAttribute("recetas", recetas);
         return "recetas/buscar";
