@@ -34,6 +34,24 @@
    - Ingredientes completos
    - Instrucciones paso a paso
 
+## Segunda Fase - Nuevas Funcionalidades
+
+### Páginas Privadas Adicionales
+1. **Gestión Multimedia de Recetas** [Privada]
+   - Agregar fotos a recetas publicadas
+   - Agregar videos a recetas publicadas
+   - Galería multimedia por receta
+
+2. **Compartir Recetas** [Privada]
+   - Compartir en el sitio web (generación de links)
+   - Compartir en redes sociales (Facebook, Twitter, Instagram)
+   - Copiar enlace directo
+
+3. **Sistema de Valoraciones** [Privada]
+   - Comentar recetas publicadas
+   - Valorar recetas con sistema de estrellas
+   - Ver histórico de comentarios y valoraciones
+
 ## Backend
 
 ### Tecnologías
@@ -126,4 +144,26 @@
 
 9. **ratings**
    - Valoraciones de usuarios
-   - Comentarios 
+   - Comentarios
+
+### Nuevas Tablas para Segunda Fase
+
+10. **recipe_videos**
+    - Enlaces o archivos de vídeos
+    - Metadatos (duración, formato)
+    - Relación con recetas
+
+11. **recipe_shares**
+    - Historial de comparticiones
+    - Plataformas de destino
+    - Estadísticas de clicks
+
+12. **recipe_comments**
+    - Comentarios detallados
+    - Información del autor
+    - Fechas de publicación
+
+13. **recipe_ratings**
+    - Sistema de valoración por estrellas
+    - Asociación usuario-receta
+    - Prevención de valoraciones duplicadas 

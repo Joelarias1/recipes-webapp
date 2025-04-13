@@ -25,6 +25,9 @@ public class RecetaService {
     @Autowired
     private IngredienteRepository ingredienteRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     public List<Receta> listarRecetasPublicas() {
         return recetaRepository.findByPublicaTrue();
     }
@@ -129,5 +132,24 @@ public class RecetaService {
     @Transactional
     public void eliminarPasoDeReceta(Long recetaId, Long pasoId) {
         pasoRecetaRepository.deleteByRecetaIdAndId(recetaId, pasoId);
+    }
+
+    /**
+     * Verifica si el usuario actual es el creador de la receta o un administrador
+     */
+    public boolean esCreadorOAdmin(Long recetaId, String username) {
+        // Obtener la receta
+        Receta receta = recetaRepository.findById(recetaId)
+                .orElseThrow(() -> new RuntimeException("Receta no encontrada"));
+        
+        // Comprobar si es el creador
+        boolean esCreador = receta.getCreador().getUsername().equals(username);
+        
+        // Comprobar si es admin (asumiendo que los admin tienen rol "ROLE_ADMIN")
+        boolean esAdmin = usuarioRepository.findByUsername(username)
+                .map(u -> u.getRol().equals("ROLE_ADMIN"))
+                .orElse(false);
+        
+        return esCreador || esAdmin;
     }
 } 

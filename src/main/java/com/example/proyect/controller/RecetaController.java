@@ -1,10 +1,19 @@
 package com.example.proyect.controller;
 
 import com.example.proyect.model.Receta;
+import com.example.proyect.model.RecetaIngrediente;
+import com.example.proyect.model.PasoReceta;
+import com.example.proyect.model.RecetaComentario;
+import com.example.proyect.model.RecetaVideo;
 import com.example.proyect.model.Usuario;
 import com.example.proyect.service.RecetaService;
 import com.example.proyect.service.UsuarioService;
+import com.example.proyect.service.RecetaValoracionService;
+import com.example.proyect.service.RecetaComentarioService;
+import com.example.proyect.service.RecetaVideoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/recetas")
@@ -24,6 +35,15 @@ public class RecetaController {
     
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private RecetaValoracionService valoracionService;
+
+    @Autowired
+    private RecetaComentarioService comentarioService;
+
+    @Autowired
+    private RecetaVideoService videoService;
 
     @GetMapping("/listar")
     public String listarRecetas(Model model) {
@@ -80,13 +100,56 @@ public class RecetaController {
     }
     
     @GetMapping("/detalle/{id}")
-    public String detalleReceta(@PathVariable Long id, Model model) {
-        Receta receta = recetaService.buscarPorId(id)
-                .orElseThrow(() -> new RuntimeException("Receta no encontrada"));
+    public String mostrarDetalle(@PathVariable Long id, Model model) {
+        Optional<Receta> recetaOpt = recetaService.buscarPorId(id);
+        
+        if (recetaOpt.isEmpty()) {
+            return "redirect:/recetas/listar";
+        }
+        
+        Receta receta = recetaOpt.get();
+        
+        // Solo permitir ver recetas públicas (a menos que seas el creador o admin)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        
+        if (!receta.isPublica() && !recetaService.esCreadorOAdmin(id, username)) {
+            return "redirect:/recetas/listar";
+        }
+        
+        List<RecetaIngrediente> ingredientes = recetaService.listarIngredientesPorReceta(id);
+        List<PasoReceta> pasos = recetaService.listarPasosPorReceta(id);
         
         model.addAttribute("receta", receta);
-        model.addAttribute("ingredientes", recetaService.listarIngredientesPorReceta(id));
-        model.addAttribute("pasos", recetaService.listarPasosPorReceta(id));
+        model.addAttribute("ingredientes", ingredientes);
+        model.addAttribute("pasos", pasos);
+        
+        // Agregar información de valoraciones
+        Double puntuacionPromedio = valoracionService.obtenerPuntuacionPromedio(id);
+        Map<Integer, Long> distribucionValoraciones = valoracionService.obtenerDistribucionPuntuaciones(id);
+        long totalValoraciones = distribucionValoraciones.values().stream().mapToLong(Long::longValue).sum();
+        
+        model.addAttribute("puntuacionPromedio", puntuacionPromedio);
+        model.addAttribute("distribucionValoraciones", distribucionValoraciones);
+        model.addAttribute("totalValoraciones", totalValoraciones);
+        
+        // Agregar comentarios recientes
+        Page<RecetaComentario> comentarios = comentarioService.obtenerComentariosAprobados(
+                id, PageRequest.of(0, 5)); // Primeros 5 comentarios
+        model.addAttribute("comentarios", comentarios.getContent());
+        model.addAttribute("totalComentarios", comentarios.getTotalElements());
+        
+        // Agregar videos
+        List<RecetaVideo> videos = videoService.obtenerVideosPorReceta(id);
+        model.addAttribute("videos", videos);
+        
+        // Verificar si el usuario actual ya ha valorado la receta
+        if (!username.equals("anonymousUser")) {
+            usuarioService.buscarPorUsername(username).ifPresent(usuario -> {
+                valoracionService.buscarValoracionUsuario(id, usuario.getId())
+                    .ifPresent(valoracion -> model.addAttribute("valoracionUsuario", valoracion));
+            });
+        }
         
         return "recetas/detalle";
     }

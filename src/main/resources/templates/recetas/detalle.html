@@ -170,6 +170,202 @@
                 </div>
             </div>
         </div>
+
+        <!-- Nuevas funcionalidades: Comentarios, Valoraciones, Videos y Compartir -->
+        <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Comentarios y Valoraciones -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Sistema de valoración -->
+                <div class="bg-white rounded-lg shadow-md p-6" id="valoraciones">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Valoración</h2>
+                    
+                    <!-- Valoración promedio -->
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center">
+                            <span class="text-3xl font-bold text-gray-800 mr-2" th:text="${#numbers.formatDecimal(puntuacionPromedio, 1, 1)}">4.5</span>
+                            <div class="flex text-yellow-400">
+                                <!-- Estrellas dinámicas basadas en la puntuación -->
+                                <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                    <i th:class="${i <= puntuacionPromedio} ? 'fas fa-star' : (${i <= puntuacionPromedio + 0.5} ? 'fas fa-star-half-alt' : 'far fa-star')"></i>
+                                </th:block>
+                            </div>
+                        </div>
+                        <span class="text-gray-500 ml-2" th:text="'(' + ${totalValoraciones} + ' valoraciones)'"></span>
+                    </div>
+                    
+                    <!-- Formulario de valoración -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg" sec:authorize="isAuthenticated()">
+                        <h3 class="font-semibold mb-3">¿Qué te pareció esta receta?</h3>
+                        <form th:action="@{/recetas/{id}/valorar(id=${receta.id})}" method="post">
+                            <input type="hidden" name="recetaId" th:value="${receta.id}">
+                            <div class="flex mb-3">
+                                <div class="flex text-2xl text-gray-400 rating">
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400" data-rating="1" th:classappend="${valoracionUsuario != null && valoracionUsuario.puntuacion >= 1} ? 'text-yellow-400'"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400" data-rating="2" th:classappend="${valoracionUsuario != null && valoracionUsuario.puntuacion >= 2} ? 'text-yellow-400'"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400" data-rating="3" th:classappend="${valoracionUsuario != null && valoracionUsuario.puntuacion >= 3} ? 'text-yellow-400'"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400" data-rating="4" th:classappend="${valoracionUsuario != null && valoracionUsuario.puntuacion >= 4} ? 'text-yellow-400'"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400" data-rating="5" th:classappend="${valoracionUsuario != null && valoracionUsuario.puntuacion >= 5} ? 'text-yellow-400'"></i>
+                                </div>
+                                <input type="hidden" id="puntuacion" name="puntuacion" th:value="${valoracionUsuario != null} ? ${valoracionUsuario.puntuacion} : '0'">
+                            </div>
+                            <div class="mb-3">
+                                <textarea name="comentario" id="comentario" rows="3" class="w-full rounded-lg border-gray-300 focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50" placeholder="Comparte tu opinión (opcional)" th:text="${valoracionUsuario != null} ? ${valoracionUsuario.comentario} : ''"></textarea>
+                            </div>
+                            <button type="submit" class="bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700 transition">
+                                <span th:text="${valoracionUsuario != null} ? 'Actualizar valoración' : 'Enviar valoración'"></span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Mensaje para usuarios no autenticados -->
+                    <div class="text-center p-4 bg-gray-50 rounded-lg mb-6" sec:authorize="!isAuthenticated()">
+                        <p class="text-gray-600 mb-3">Inicia sesión para valorar esta receta</p>
+                        <a th:href="@{/login}" class="bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700 transition">
+                            Iniciar sesión
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Comentarios -->
+                <div class="bg-white rounded-lg shadow-md p-6" id="comentarios">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Comentarios</h2>
+                    
+                    <!-- Formulario de comentario -->
+                    <div class="mb-8 p-4 bg-gray-50 rounded-lg" sec:authorize="isAuthenticated()">
+                        <h3 class="font-semibold mb-3">Deja un comentario</h3>
+                        <form th:action="@{/recetas/{id}/comentar(id=${receta.id})}" method="post">
+                            <input type="hidden" name="recetaId" th:value="${receta.id}">
+                            <div class="mb-3">
+                                <textarea name="contenido" id="contenido" rows="3" class="w-full rounded-lg border-gray-300 focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50" placeholder="Escribe tu comentario..."></textarea>
+                            </div>
+                            <button type="submit" class="bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700 transition">
+                                Publicar comentario
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Lista de comentarios -->
+                    <div class="space-y-6">
+                        <!-- Comentarios dinámicos -->
+                        <div th:each="comentario : ${comentarios}" class="border-b border-gray-200 pb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center">
+                                    <div class="font-semibold" th:text="${comentario.usuario.nombre + ' ' + comentario.usuario.apellido}">Nombre Usuario</div>
+                                    <div class="text-gray-500 text-sm ml-2" 
+                                         th:text="${#temporals.format(comentario.fechaCreacion, 'dd/MM/yyyy')}">Fecha</div>
+                                </div>
+                            </div>
+                            <p class="text-gray-700" th:text="${comentario.contenido}">Contenido del comentario</p>
+                        </div>
+                        
+                        <!-- Mensaje cuando no hay comentarios -->
+                        <div class="text-center py-8" th:if="${#lists.isEmpty(comentarios)}">
+                            <i class="far fa-comment-dots text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">No hay comentarios todavía. ¡Sé el primero en comentar!</p>
+                        </div>
+                        
+                        <!-- Botón para cargar más comentarios -->
+                        <div class="text-center mt-6" th:if="${totalComentarios > 5}">
+                            <button id="cargar-mas-btn" 
+                                    class="text-teal-600 hover:text-teal-800 font-medium"
+                                    th:onclick="'cargarMasComentarios(' + ${receta.id} + ', 1)'">
+                                Cargar más comentarios
+                                <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Videos -->
+                <div class="bg-white rounded-lg shadow-md p-6" id="videos">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Videos</h2>
+                    
+                    <!-- Formulario para agregar video (solo para el creador o admin) -->
+                    <div class="mb-8 p-4 bg-gray-50 rounded-lg" 
+                         th:if="${#authorization.expression('hasRole(''ADMIN'')')} or ${#authentication.name == receta.creador.username}">
+                        <h3 class="font-semibold mb-3">Agregar video</h3>
+                        <form th:action="@{/recetas/{id}/videos(id=${receta.id})}" method="post">
+                            <div class="mb-3">
+                                <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                <input type="text" id="titulo" name="titulo" class="w-full rounded-lg border-gray-300 focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="videoUrl" class="block text-sm font-medium text-gray-700 mb-1">URL del video (YouTube o Vimeo)</label>
+                                <input type="text" id="videoUrl" name="videoUrl" class="w-full rounded-lg border-gray-300 focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50" placeholder="https://www.youtube.com/watch?v=..." required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+                                <textarea id="descripcion" name="descripcion" rows="2" class="w-full rounded-lg border-gray-300 focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50"></textarea>
+                            </div>
+                            <button type="submit" class="bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700 transition">
+                                Agregar video
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Lista de videos -->
+                    <div class="space-y-6">
+                        <!-- Videos dinámicos -->
+                        <div th:each="video : ${videos}" class="border-b border-gray-200 pb-6">
+                            <div class="mb-2 font-semibold" th:text="${video.titulo}">Título del video</div>
+                            <div class="aspect-w-16 aspect-h-9 mb-4">
+                                <iframe th:src="${video.videoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="rounded-lg"></iframe>
+                            </div>
+                            <p class="text-gray-700" th:text="${video.descripcion}">Descripción del video</p>
+                            
+                            <!-- Botón eliminar (solo para el creador o admin) -->
+                            <div th:if="${#authorization.expression('hasRole(''ADMIN'')')} or ${#authentication.name == receta.creador.username}" class="mt-2">
+                                <form th:action="@{/recetas/videos/{videoId}/eliminar(videoId=${video.id})}" method="post">
+                                    <input type="hidden" name="recetaId" th:value="${receta.id}">
+                                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+                                        <i class="fas fa-trash-alt mr-1"></i> Eliminar video
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje cuando no hay videos -->
+                        <div class="text-center py-8" th:if="${#lists.isEmpty(videos)}">
+                            <i class="fas fa-video text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">No hay videos disponibles para esta receta.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar: Compartir y más recetas -->
+            <div class="lg:col-span-1">
+                <!-- Compartir receta -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6 sticky top-4">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Compartir receta</h2>
+                    <div class="space-y-3">
+                        <button class="w-full flex items-center justify-center py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition" 
+                                onclick="compartirReceta('FACEBOOK')">
+                            <i class="fab fa-facebook-f mr-2"></i> Facebook
+                        </button>
+                        <button class="w-full flex items-center justify-center py-2 px-4 bg-sky-500 text-white rounded hover:bg-sky-600 transition"
+                                onclick="compartirReceta('TWITTER')">
+                            <i class="fab fa-twitter mr-2"></i> Twitter
+                        </button>
+                        <button class="w-full flex items-center justify-center py-2 px-4 bg-pink-600 text-white rounded hover:bg-pink-700 transition"
+                                onclick="compartirReceta('INSTAGRAM')">
+                            <i class="fab fa-instagram mr-2"></i> Instagram
+                        </button>
+                        <button class="w-full flex items-center justify-center py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                onclick="compartirReceta('EMAIL')">
+                            <i class="fas fa-envelope mr-2"></i> Email
+                        </button>
+                        <button class="w-full flex items-center justify-center py-2 px-4 bg-gray-700 text-white rounded hover:bg-gray-800 transition" 
+                                onclick="copiarEnlace()">
+                            <i class="fas fa-link mr-2"></i> Copiar enlace
+                        </button>
+                        <div id="enlace-copiado" class="hidden bg-green-100 text-green-800 text-sm py-2 px-3 rounded mt-2 text-center">
+                            ¡Enlace copiado!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Modal de confirmación para eliminar -->
@@ -225,6 +421,243 @@
 
         document.getElementById('btn-cancelar')?.addEventListener('click', function() {
             document.getElementById('modal-eliminar').classList.add('hidden');
+        });
+
+        // Sistema de valoración por estrellas
+        document.addEventListener('DOMContentLoaded', function() {
+            const estrellas = document.querySelectorAll('.rating .fa-star');
+            const puntuacionInput = document.getElementById('puntuacion');
+            
+            estrellas.forEach(estrella => {
+                estrella.addEventListener('click', function() {
+                    const valor = this.getAttribute('data-rating');
+                    puntuacionInput.value = valor;
+                    
+                    // Actualizar visualización
+                    estrellas.forEach(est => {
+                        if (est.getAttribute('data-rating') <= valor) {
+                            est.classList.add('text-yellow-400');
+                        } else {
+                            est.classList.remove('text-yellow-400');
+                        }
+                    });
+                });
+            });
+        });
+        
+        // Funciones para compartir
+        function compartirReceta(plataforma) {
+            const url = window.location.href;
+            const titulo = document.querySelector('h1').innerText;
+            
+            switch(plataforma) {
+                case 'FACEBOOK':
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                    break;
+                case 'TWITTER':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(titulo)}&url=${encodeURIComponent(url)}`, '_blank');
+                    break;
+                case 'INSTAGRAM':
+                    alert('Para compartir en Instagram, guarda una imagen de la receta y súbela desde la app.');
+                    break;
+                case 'EMAIL':
+                    window.location.href = `mailto:?subject=${encodeURIComponent(titulo)}&body=${encodeURIComponent('Mira esta receta: ' + url)}`;
+                    break;
+            }
+        }
+        
+        // Función para copiar enlace
+        function copiarEnlace() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(function() {
+                const mensajeCopiado = document.getElementById('enlace-copiado');
+                mensajeCopiado.classList.remove('hidden');
+                
+                setTimeout(function() {
+                    mensajeCopiado.classList.add('hidden');
+                }, 2000);
+            });
+        }
+
+        // Funciones para valorar recetas
+        function valorarReceta() {
+            const recetaId = document.querySelector('input[name="recetaId"]').value;
+            const puntuacion = document.getElementById('puntuacion').value;
+            const comentario = document.getElementById('comentario').value;
+            
+            if (puntuacion === '0') {
+                alert('Por favor, selecciona una valoración de estrellas');
+                return;
+            }
+            
+            fetch(`/recetas/${recetaId}/valorar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                },
+                body: new URLSearchParams({
+                    'puntuacion': puntuacion,
+                    'comentario': comentario,
+                    '_csrf': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar la visualización de la valoración
+                    document.querySelector('.text-3xl.font-bold').textContent = data.promedio.toFixed(1);
+                    
+                    // Mostrar mensaje de éxito
+                    alert('¡Gracias por tu valoración!');
+                    
+                    // Actualizar estrellas promedio
+                    actualizarEstrellasPromedio(data.promedio);
+                    
+                    // Recargar la página para actualizar todos los elementos
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ha ocurrido un error al enviar tu valoración');
+            });
+            
+            return false; // Evitar que el formulario se envíe normalmente
+        }
+        
+        function actualizarEstrellasPromedio(promedio) {
+            const estrellas = document.querySelectorAll('.flex.text-yellow-400 i');
+            
+            estrellas.forEach((estrella, index) => {
+                const valorEstrella = index + 1;
+                
+                if (valorEstrella <= promedio) {
+                    estrella.className = 'fas fa-star';
+                } else if (valorEstrella <= promedio + 0.5) {
+                    estrella.className = 'fas fa-star-half-alt';
+                } else {
+                    estrella.className = 'far fa-star';
+                }
+            });
+        }
+        
+        // Funciones para comentarios
+        function enviarComentario() {
+            const recetaId = document.querySelector('input[name="recetaId"]').value;
+            const contenido = document.getElementById('contenido').value;
+            
+            if (!contenido || contenido.trim() === '') {
+                alert('Por favor, escribe un comentario');
+                return;
+            }
+            
+            fetch(`/recetas/${recetaId}/comentar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                },
+                body: new URLSearchParams({
+                    'contenido': contenido,
+                    '_csrf': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Limpiar el campo de texto
+                    document.getElementById('contenido').value = '';
+                    
+                    // Mostrar mensaje apropiado
+                    alert(data.mensaje);
+                    
+                    // Si el comentario fue aprobado automáticamente, recargar la página
+                    if (data.aprobado) {
+                        location.reload();
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ha ocurrido un error al enviar tu comentario');
+            });
+            
+            return false; // Evitar que el formulario se envíe normalmente
+        }
+        
+        // Cargar más comentarios
+        function cargarMasComentarios(recetaId, pagina) {
+            fetch(`/recetas/${recetaId}/comentarios?pagina=${pagina}&tamanio=5`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Renderizar los comentarios adicionales
+                    const comentariosContainer = document.querySelector('#comentarios .space-y-6');
+                    
+                    data.comentarios.forEach(comentario => {
+                        const comentarioElement = document.createElement('div');
+                        comentarioElement.className = 'border-b border-gray-200 pb-6';
+                        
+                        const fecha = new Date(comentario.fechaCreacion);
+                        const fechaFormateada = `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+                        
+                        comentarioElement.innerHTML = `
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center">
+                                    <div class="font-semibold">${comentario.usuario.nombre} ${comentario.usuario.apellido}</div>
+                                    <div class="text-gray-500 text-sm ml-2">${fechaFormateada}</div>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">${comentario.contenido}</p>
+                        `;
+                        
+                        comentariosContainer.appendChild(comentarioElement);
+                    });
+                    
+                    // Actualizar el botón "Cargar más"
+                    const cargarMasBtn = document.getElementById('cargar-mas-btn');
+                    if (data.totalPaginas <= pagina + 1) {
+                        cargarMasBtn.style.display = 'none';
+                    } else {
+                        cargarMasBtn.setAttribute('onclick', `cargarMasComentarios(${recetaId}, ${pagina + 1})`);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        // Inicializar formularios con eventos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formulario de valoración
+            const formValoracion = document.querySelector('form[action*="/valorar"]');
+            if (formValoracion) {
+                formValoracion.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    valorarReceta();
+                });
+            }
+            
+            // Formulario de comentario
+            const formComentario = document.querySelector('form[action*="/comentar"]');
+            if (formComentario) {
+                formComentario.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    enviarComentario();
+                });
+            }
+            
+            // CSRF token para AJAX
+            const metaElement = document.createElement('meta');
+            metaElement.name = '_csrf';
+            metaElement.content = document.querySelector('input[name="_csrf"]')?.value || '';
+            document.head.appendChild(metaElement);
         });
     </script>
 
