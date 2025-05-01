@@ -7,8 +7,8 @@ CREATE TABLE receta_videos (
     descripcion VARCHAR2(1000),
     duracion_segundos NUMBER,
     formato VARCHAR2(20),
-    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_video_receta FOREIGN KEY (receta_id) REFERENCES recetas(id)
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    -- CONSTRAINT fk_video_receta FOREIGN KEY (receta_id) REFERENCES recetas(id)
 );
 
 -- Tabla para compartir recetas
@@ -19,9 +19,9 @@ CREATE TABLE receta_shares (
     plataforma VARCHAR2(50) NOT NULL,
     fecha_compartida TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     enlace_generado VARCHAR2(500),
-    clicks NUMBER DEFAULT 0,
-    CONSTRAINT fk_share_receta FOREIGN KEY (receta_id) REFERENCES recetas(id),
-    CONSTRAINT fk_share_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    clicks NUMBER DEFAULT 0
+    -- CONSTRAINT fk_share_receta FOREIGN KEY (receta_id) REFERENCES recetas(id),
+    -- CONSTRAINT fk_share_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 -- Tabla para comentarios de recetas
@@ -31,9 +31,9 @@ CREATE TABLE receta_comentarios (
     usuario_id NUMBER NOT NULL,
     contenido VARCHAR2(2000) NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    aprobado NUMBER(1) DEFAULT 0 NOT NULL,
-    CONSTRAINT fk_comentario_receta FOREIGN KEY (receta_id) REFERENCES recetas(id),
-    CONSTRAINT fk_comentario_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    aprobado NUMBER(1) DEFAULT 0 NOT NULL
+    -- CONSTRAINT fk_comentario_receta FOREIGN KEY (receta_id) REFERENCES recetas(id),
+    -- CONSTRAINT fk_comentario_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 -- Tabla para valoraciones de recetas
@@ -44,8 +44,8 @@ CREATE TABLE receta_valoraciones (
     puntuacion NUMBER(1) NOT NULL CHECK (puntuacion BETWEEN 1 AND 5),
     comentario VARCHAR2(1000),
     fecha_valoracion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_valoracion_receta FOREIGN KEY (receta_id) REFERENCES recetas(id),
-    CONSTRAINT fk_valoracion_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    -- CONSTRAINT fk_valoracion_receta FOREIGN KEY (receta_id) REFERENCES recetas(id),
+    -- CONSTRAINT fk_valoracion_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     CONSTRAINT uk_valoracion_usuario_receta UNIQUE (receta_id, usuario_id)
 );
 

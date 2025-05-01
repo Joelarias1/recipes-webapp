@@ -1,7 +1,7 @@
 -- Esquema inicial de la base de datos
 
 -- Tabla de usuarios
-CREATE TABLE IF NOT EXISTS usuarios (
+CREATE TABLE usuarios (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     username VARCHAR2(50) NOT NULL UNIQUE,
     password VARCHAR2(255) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 );
 
 -- Tabla de recetas
-CREATE TABLE IF NOT EXISTS recetas (
+CREATE TABLE recetas (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre VARCHAR2(255) NOT NULL,
     descripcion VARCHAR2(1000),
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS recetas (
 );
 
 -- Tabla de ingredientes
-CREATE TABLE IF NOT EXISTS ingredientes (
+CREATE TABLE ingredientes (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre VARCHAR2(255) NOT NULL UNIQUE,
     descripcion VARCHAR2(500)
 );
 
 -- Tabla de relación receta-ingredientes
-CREATE TABLE IF NOT EXISTS receta_ingredientes (
+CREATE TABLE receta_ingredientes (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     receta_id NUMBER NOT NULL,
     ingrediente_id NUMBER NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS receta_ingredientes (
 );
 
 -- Tabla de pasos de receta
-CREATE TABLE IF NOT EXISTS pasos_receta (
+CREATE TABLE pasos_receta (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     receta_id NUMBER NOT NULL,
     numero_orden NUMBER NOT NULL,
@@ -55,9 +55,9 @@ CREATE TABLE IF NOT EXISTS pasos_receta (
 );
 
 -- Índices para mejorar rendimiento
-CREATE INDEX IF NOT EXISTS idx_receta_usuario ON recetas(usuario_id);
-CREATE INDEX IF NOT EXISTS idx_receta_publica ON recetas(publica);
-CREATE INDEX IF NOT EXISTS idx_receta_ingrediente_receta ON receta_ingredientes(receta_id);
-CREATE INDEX IF NOT EXISTS idx_receta_ingrediente_ingrediente ON receta_ingredientes(ingrediente_id);
-CREATE INDEX IF NOT EXISTS idx_paso_receta ON pasos_receta(receta_id);
-CREATE INDEX IF NOT EXISTS idx_paso_orden ON pasos_receta(numero_orden); 
+CREATE INDEX idx_receta_usuario ON recetas(usuario_id);
+CREATE INDEX idx_receta_publica ON recetas(publica);
+CREATE INDEX idx_receta_ingrediente_receta ON receta_ingredientes(receta_id);
+CREATE INDEX idx_receta_ingrediente_ingrediente ON receta_ingredientes(ingrediente_id);
+CREATE INDEX idx_paso_receta ON pasos_receta(receta_id);
+CREATE INDEX idx_paso_orden ON pasos_receta(numero_orden); 
