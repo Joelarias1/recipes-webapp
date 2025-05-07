@@ -65,3 +65,9 @@ truststore.jks
 
 # Environment variables
 .env
+
+# SonarQube
+sonar-project.properties
+sonar-local.properties
+.sonar/
+.scannerwork/

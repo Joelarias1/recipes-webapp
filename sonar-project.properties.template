@@ -1,0 +1,24 @@
+# Información del proyecto
+sonar.projectKey=recipes-webapp
+sonar.projectName=Recipes WebApp
+sonar.projectVersion=1.0
+
+# Configuración de conexión
+sonar.host.url=http://localhost:9000
+# sonar.token=TU_TOKEN_AQUI (Nunca agregues tokens reales a archivos versionados)
+
+# Rutas a analizar
+sonar.sources=src/main
+sonar.java.binaries=target/classes
+sonar.java.test.binaries=target/test-classes
+sonar.tests=src/test
+
+# Codificación del código fuente
+sonar.sourceEncoding=UTF-8
+
+# Información de cobertura
+sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+sonar.java.coveragePlugin=jacoco
+
+# Exclusiones
+sonar.exclusions=src/main/resources/**,src/test/resources/** 

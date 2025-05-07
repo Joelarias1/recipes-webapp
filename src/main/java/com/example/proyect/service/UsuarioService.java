@@ -5,13 +5,15 @@ import com.example.proyect.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.core.env.Environment;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class UsuarioService {
@@ -21,6 +23,12 @@ public class UsuarioService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private Environment env;
+    
+    private Random random = new Random();
+    private Logger logger = LoggerFactory.getLogger(UsuarioService.class);
     
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
@@ -59,10 +67,15 @@ public class UsuarioService {
     public void crearUsuariosIniciales() {
         // Solo crear usuarios si no existen
         if (usuarioRepository.count() == 0) {
+            // Genera o lee contraseñas seguras
+            String adminPass = getSecurePassword("usuario.admin.password", 12);
+            String chefPass = getSecurePassword("usuario.chef.password", 12);
+            String userPass = getSecurePassword("usuario.user.password", 12);
+            
             // Usuario Administrador
             Usuario admin = new Usuario();
             admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setPassword(passwordEncoder.encode(adminPass));
             admin.setNombre("Administrador");
             admin.setApellido("Sistema");
             admin.setEmail("admin@sistema.com");
@@ -73,7 +86,7 @@ public class UsuarioService {
             // Usuario Chef
             Usuario chef = new Usuario();
             chef.setUsername("chef");
-            chef.setPassword(passwordEncoder.encode("chef123"));
+            chef.setPassword(passwordEncoder.encode(chefPass));
             chef.setNombre("Chef");
             chef.setApellido("Principal");
             chef.setEmail("chef@sistema.com");
@@ -84,14 +97,43 @@ public class UsuarioService {
             // Usuario Regular
             Usuario user = new Usuario();
             user.setUsername("user");
-            user.setPassword(passwordEncoder.encode("user123"));
+            user.setPassword(passwordEncoder.encode(userPass));
             user.setNombre("Usuario");
             user.setApellido("Regular");
             user.setEmail("user@sistema.com");
             user.setRol("ROLE_USER");
             user.setActivo(true);
             usuarioRepository.save(user);
+            
+            // Loguear las credenciales iniciales para que los admins puedan acceder la primera vez
+            logger.info("CREDENCIALES INICIALES CREADAS:");
+            logger.info("Admin - Usuario: admin | Contraseña: {}", adminPass);
+            logger.info("Chef - Usuario: chef | Contraseña: {}", chefPass);
+            logger.info("Usuario - Usuario: user | Contraseña: {}", userPass);
         }
+    }
+    
+    /**
+     * Obtiene una contraseña segura desde properties o genera una aleatoria
+     * @param propertyName Nombre de la propiedad de configuración
+     * @param length Longitud mínima de la contraseña
+     * @return Contraseña segura
+     */
+    private String getSecurePassword(String propertyName, int length) {
+        // Intentar obtener la contraseña desde las propiedades
+        String password = env.getProperty(propertyName);
+        
+        // Si no hay propiedad definida, generar una contraseña aleatoria segura
+        if (password == null || password.isEmpty()) {
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+            StringBuilder sb = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            password = sb.toString();
+        }
+        
+        return password;
     }
 
     /**
